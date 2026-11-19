@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network-Level Attacks Lab</title>
+<meta name="description" content="Interactive models of a TCP SYN flood, the Mirai botnet and DGA, and TCP session hijacking. Kelompok 4, Module 07.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%23143F78%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2714%27 font-weight=%27700%27 fill=%27%23F3EFE4%27 text-anchor=%27middle%27%3EM07%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800;900&family=Overpass+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+:root{
+  /* Layout: a left-aligned 70ch reading column on light concourse stone. Enamel-blue sign plates open each platform; live state sits on black split-flap boards that break out to the full 1160px. */
+  --ground:#E3E5E1; --ground-2:#D4D8D3; --ink:#14181D; --ink-2:#48505A; --rule:#B7BDB7;
+  --enamel:#143F78; --enamel-2:#0C2B55; --pin:#F3EFE4;
+  --board:#101113; --tile:#202226; --tile-2:#191B1E; --board-rule:#2B2E33; --board-ink-2:#9CA3AB;
+  --amber:#F2B134; --lamp-ok:#3FD083; --lamp-bad:#FF6259;
+  --ok:#0F6B3E; --bad:#B3262A;
+  --route:#2459C7; --route-hi:#93B4FF; --attack:#D2263B; --c2:#C98209;
+  --font-sign:"Overpass","Segoe UI",system-ui,sans-serif;
+  --font-data:"Overpass Mono",ui-monospace,Consolas,monospace;
+  --tg:2px;
+  color-scheme:light;
+}
+/* registered so tile width and row gap resolve to px on the board, and column labels in a smaller font still line up */
+@property --tw{syntax:'<length>';inherits:true;initial-value:11px}
+@property --rg{syntax:'<length>';inherits:true;initial-value:6px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px;scrollbar-color:var(--enamel) var(--ground-2)}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 17px/1.6 var(--font-sign);-webkit-font-smoothing:antialiased}
+::selection{background:var(--amber);color:var(--board)}
+:focus-visible{outline:3px solid var(--enamel);outline-offset:3px;border-radius:3px}
+.board :focus-visible,.bar :focus-visible,.mast :focus-visible,.def :focus-visible{outline-color:var(--amber)}
+a{color:var(--enamel);text-underline-offset:3px;text-decoration-thickness:1.5px}
+h1,h2,h3{font-family:var(--font-sign);text-wrap:balance;letter-spacing:-.02em;margin:0}
+p{margin:0 0 1em}
+b,strong{font-weight:800}
+code{font:600 .86em/1 var(--font-data);background:var(--ground-2);padding:.15em .35em;border-radius:3px}
+.wide{max-width:1160px;margin:0 auto;padding:0 20px}
+.col{max-width:70ch}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.ico{width:1.1em;height:1.1em;flex:none}
+
+/* sticky sign bar */
+.bar{position:sticky;top:0;z-index:40;background:var(--enamel-2);color:#fff}
+.bar .wide{display:flex;align-items:center;gap:18px;height:52px}
+.bar a{color:#fff;text-decoration:none}
+.bar-home{display:flex;align-items:center;gap:10px;font-weight:800;white-space:nowrap}
+.code{background:var(--pin);color:var(--enamel-2);font:800 .8rem/1 var(--font-data);padding:6px 7px 4px;border-radius:3px}
+.bar ol{list-style:none;display:flex;gap:4px;margin:0 0 0 auto;padding:0;overflow-x:auto;min-width:0}
+.bar li{flex:none}
+.bar li a{display:flex;align-items:center;gap:7px;padding:8px 10px 6px;border-radius:4px;font-weight:700;font-size:.92rem;white-space:nowrap;border-bottom:3px solid transparent}
+.bar li a:hover{background:rgba(255,255,255,.08)}
+.bar li a.on{border-bottom-color:var(--amber)}
+.pl{display:inline-grid;place-items:center;width:22px;height:22px;background:#fff;color:var(--enamel-2);border-radius:3px;font:800 .8rem/1 var(--font-data);padding-top:2px}
+@media(max-width:720px){.bar-title,.bar .lbl{display:none}.bar li a{padding:8px 7px 6px}}
+@media(max-width:480px){.bar-home{display:none}.bar ol{margin:0 auto}}
+
+/* masthead sign */
+.mast{padding-top:22px}
+.sign{position:relative;background:var(--enamel);color:#fff;border-radius:12px;box-shadow:0 2px 0 rgba(0,0,0,.18),0 14px 28px -16px rgba(12,43,85,.7)}
+.sign::before{content:"";position:absolute;inset:7px;border:2px solid rgba(243,239,228,.8);border-radius:7px;pointer-events:none}
+.mast .sign{padding:46px 44px 38px}
+.mast h1{font-weight:900;font-size:clamp(2.2rem,7vw,5.4rem);line-height:.98;letter-spacing:-.025em;max-width:18ch}
+.nw{white-space:nowrap}
+.mast .lede{font-size:clamp(1.05rem,1.6vw,1.22rem);max-width:56ch;margin:22px 0 0;color:#E4EAF4}
+.mast .meta{margin:26px 0 0;font:600 .8rem/1.4 var(--font-data);color:#BFCCE0}
+.hero-board{margin-top:14px}
+.tip{font-size:.92rem;color:var(--ink-2);margin:14px 2px 0}
+@media(max-width:560px){.mast .sign{padding:34px 24px 28px}}
+
+/* split-flap board */
+.board{background:var(--board);color:var(--pin);border-radius:9px;padding:14px 16px 16px;box-shadow:inset 0 0 0 1px var(--board-rule),0 12px 26px -16px rgba(0,0,0,.6);font:600 clamp(10.5px,2.9vw,15px)/1 var(--font-data);overflow:hidden}
+.b-head{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--amber);font:700 .78rem/1.2 var(--font-data);letter-spacing:.06em;text-transform:uppercase;padding:2px 2px 10px;border-bottom:1px solid var(--board-rule);margin-bottom:10px}
+.b-stat{display:flex;align-items:center;gap:8px}
+.row{display:flex;gap:var(--rg);align-items:center;padding:3px 2px;border-radius:3px;white-space:nowrap}
+@media(max-width:560px){body .board{--rg:.4em;padding:12px 10px 14px}}
+.cell{display:inline-flex;gap:var(--tg)}
+.t{display:inline-grid;place-items:center;width:var(--tw);height:1.42em;padding-top:.12em;background:linear-gradient(var(--tile) 0 50%,var(--tile-2) 50%);border-radius:2px;position:relative;color:var(--pin);font-weight:600}
+.t::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.6)}
+.board{--tw:.74em;--rg:.55em}
+.cell{--tw:.74em}
+.b-cols{color:var(--board-ink-2);font:700 max(11px,.7em)/1 var(--font-data);letter-spacing:.04em;text-transform:uppercase;padding-bottom:6px}
+.b-cols span{width:calc(var(--w) * (var(--tw) + var(--tg)));flex:none;overflow:hidden}
+.row.warn .c-state .t{color:var(--amber)}
+.row.ok .c-state .t{color:var(--lamp-ok)}
+.row.bad .c-state .t,.row.refused .c-state .t{color:var(--lamp-bad)}
+.row.real .c-ip .t{color:var(--route-hi)}
+.row.dim .t{color:var(--board-ink-2)}
+.row.sink .c-state .t{color:var(--amber)}
+.row.refused{background:repeating-linear-gradient(-45deg,rgba(255,98,89,.2) 0 5px,transparent 5px 11px)}
+.b-foot{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--board-rule);font:600 .72rem/1.2 var(--font-data);color:var(--board-ink-2);text-transform:uppercase;letter-spacing:.04em}
+.b-foot>span{display:flex;align-items:center;gap:8px}
+.b-foot .cell{font-size:1.28em}
+.lamp{width:11px;height:11px;border-radius:50%;background:#3A3E44;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.lamp.ok{background:var(--lamp-ok)}.lamp.warn{background:var(--amber)}.lamp.bad{background:var(--lamp-bad)}
+.lamp.blink{animation:blink 1s steps(2,jump-none) infinite}
+@keyframes blink{50%{background:#3A3E44}}
+.hero-board{font-size:clamp(12px,2vw,25px)}
+.hero-board .row{text-decoration:none;color:inherit;padding:6px 6px;margin:0 -4px}
+.hero-board a.row:hover{background:#1B1D21}
+.hero-board .c-state .t{color:var(--lamp-ok)}
+@media(max-width:720px){.hide-s{display:none!important}}
+
+/* platform sections */
+.platform{padding:88px 0 24px}
+.p-sign{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding:26px 28px 22px}
+.p-num{width:64px;height:64px;display:grid;place-items:center;background:var(--pin);color:var(--enamel);border-radius:6px;font:900 2.5rem/1 var(--font-sign);padding-top:6px}
+.p-sign h2{font-weight:900;font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.02}
+.p-sign .sub{margin:6px 0 0;color:#D8E1EF;font-size:1.02rem}
+.p-sign .ref{font:600 .78rem/1.3 var(--font-data);color:#BFCCE0;text-align:right;align-self:end}
+@media(max-width:620px){.p-sign{grid-template-columns:auto 1fr;padding:22px 20px 18px}.p-num{width:50px;height:50px;font-size:2rem}.p-sign .ref{grid-column:1/-1;text-align:left}}
+.lead{font-size:1.12rem;margin:30px 0 0}
+.note{border-top:2px solid var(--ink);padding-top:12px;margin:26px 0 0;font-size:.98rem}
+.note strong{display:block;margin-bottom:2px}
+h3.h{font-size:1.32rem;font-weight:800;margin:46px 0 12px}
+
+/* terms */
+.term{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:help;text-decoration:underline dotted 2px;text-underline-offset:4px;text-decoration-color:var(--enamel)}
+.term:hover{color:var(--enamel)}
+
+/* models */
+.sim{margin:34px 0 8px;border-top:6px solid var(--amber);padding-top:20px}
+.sim-head{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin-bottom:18px}
+.sim-head h3{font-size:1.32rem;font-weight:800}
+.sim-head p{margin:0;color:var(--ink-2);max-width:78ch}
+.sim-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,1fr);gap:22px;align-items:start}
+.sim-main{display:grid;gap:14px;min-width:0}
+.sim-side{display:grid;gap:16px}
+@media(max-width:920px){.sim-grid{grid-template-columns:minmax(0,1fr)}.sim-side{display:contents}.move{order:-1}}
+.lines{width:100%;height:auto;display:block;overflow:visible}
+.lines .ln{fill:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+.ln.user{stroke:var(--route)}.ln.atk{stroke:var(--attack)}.ln.ghost{stroke:var(--rule);stroke-dasharray:2 10;stroke-width:6}.ln.ink{stroke:var(--ink)}
+.lines .stn{fill:#fff;stroke:var(--ink);stroke-width:4}
+.lines .stn.atk{stroke:var(--attack)}.lines .stn.ghost{stroke:var(--rule);stroke-dasharray:4 4}
+.lines text{font:800 19px var(--font-sign);fill:var(--ink)}
+.lines text.sub{font:600 15px var(--font-data);fill:var(--ink-2)}
+.lines text.atk{fill:var(--attack)}.lines text.user{fill:var(--route)}
+@media(max-width:560px){.lines text.sub{font-size:19px}}
+.pkt circle{stroke:#fff;stroke-width:2.5}
+.pkt text{font:700 15px var(--font-data);fill:var(--ink);paint-order:stroke;stroke:var(--ground);stroke-width:6px;stroke-linejoin:round}
+
+/* stage rail */
+.rail{list-style:none;display:flex;margin:0 0 18px;padding:0;counter-reset:st}
+.rail li{flex:1;position:relative;padding:30px 10px 0 0;font:700 .84rem/1.25 var(--font-sign);color:var(--ink-2);counter-increment:st}
+.rail li::before{content:"";position:absolute;left:0;right:0;top:9px;height:6px;background:var(--rule)}
+.rail li::after{content:counter(st);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:#fff;border:4px solid var(--rule);display:grid;place-items:center;font:800 .7rem/1 var(--font-data);color:var(--ink-2);padding-top:1px}
+.rail li:last-child::before{right:auto;width:24px}
+.rail li.hit::before{background:var(--attack)}
+.rail li.hit::after{border-color:var(--attack);color:var(--attack)}
+.rail li.now{color:var(--ink)}
+.rail li.now::after{background:var(--attack);color:#fff}
+.rail li.side::after{content:"!"}
+.rail.safe li.hit::before{background:var(--ok)}
+@media(max-width:560px){.rail li{font-size:.72rem;padding-right:4px}}
+
+/* your move plate */
+.move{background:var(--amber);color:var(--ink);border-radius:8px;padding:14px 16px 12px;box-shadow:0 10px 22px -16px rgba(120,80,0,.8)}
+.move-top{display:flex;justify-content:space-between;align-items:baseline;font:900 1.05rem/1.2 var(--font-sign)}
+.move-n{font:700 .8rem/1 var(--font-data)}
+.move-text{margin:8px 0 6px;font-size:1rem;line-height:1.5}
+.linkbtn{font:700 .82rem/1 var(--font-sign);background:none;border:0;padding:4px 0;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* controls */
+.ctl{display:grid;gap:14px}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{position:relative;font:800 .95rem/1.1 var(--font-sign);padding:13px 16px 11px;min-height:46px;border-radius:7px;border:0;background:var(--enamel);color:#fff;cursor:pointer;text-align:left;transition:transform .12s ease-out,background .15s}
+.btn::before{content:"";position:absolute;inset:3px;border:1.5px solid rgba(243,239,228,.6);border-radius:5px;pointer-events:none}
+.btn:hover{background:var(--enamel-2)}
+.btn:active{transform:translateY(1px)}
+.btn.atk{background:var(--attack)}.btn.atk:hover{background:#A91B2E}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.btn.ghost::before{display:none}
+.btn.ghost:hover{background:var(--ground-2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.cue,.switch.cue,.seg button.cue{box-shadow:0 0 0 3px var(--ground),0 0 0 7px var(--amber);animation:cue 1.3s ease-in-out infinite}
+.btn.ghost.cue{box-shadow:inset 0 0 0 2px var(--ink),0 0 0 3px var(--ground),0 0 0 7px var(--amber)}
+@keyframes cue{50%{box-shadow:0 0 0 3px var(--ground),0 0 0 7px rgba(242,177,52,.25)}}
+.field{display:grid;gap:6px;font:700 .88rem/1.3 var(--font-sign)}
+.field>span{display:flex;justify-content:space-between;gap:10px}
+.field small{display:block;font:600 .72rem/1.3 var(--font-data);color:var(--ink-2)}
+.field output{font:700 .85rem/1.3 var(--font-data);white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--enamel);height:28px;margin:0}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font:700 .92rem/1.2 var(--font-sign)}
+.switch{display:inline-flex;align-items:center;gap:9px;font:800 .85rem/1 var(--font-data);background:var(--board);color:var(--pin);border:0;border-radius:6px;padding:10px 13px 8px;cursor:pointer;min-height:40px}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--ground-2);border-radius:8px;padding:4px;gap:4px}
+.seg button{font:800 .88rem/1 var(--font-sign);border:0;background:transparent;color:var(--ink);padding:11px 12px 9px;border-radius:5px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--board);color:var(--pin)}
+.sysctl{margin:0;background:var(--board);color:var(--pin);border-radius:7px;padding:12px 14px;font:500 .74rem/1.65 var(--font-data);overflow-x:auto;white-space:pre}
+.sysctl .c{color:var(--board-ink-2)}
+.sysctl .v{color:var(--amber)}
+
+/* announcement */
+.pa{display:flex;gap:12px;background:var(--board);color:var(--pin);border-radius:9px;padding:14px 16px;align-items:flex-start;min-height:92px}
+.pa svg.ico{color:var(--amber);margin-top:3px;width:22px;height:22px}
+.pa-now{margin:0;font-size:1rem;line-height:1.5}
+.pa-now.ok b,.pa-now.ok strong{color:var(--lamp-ok)}
+.pa-now.bad b,.pa-now.bad strong{color:var(--lamp-bad)}
+.pa-prev{margin:8px 0 0;font-size:.86rem;line-height:1.45;color:var(--board-ink-2)}
+.pa-prev:empty{display:none}
+.pa-label{display:block;font:700 .72rem/1 var(--font-data);color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+
+/* mirai */
+.loop .ln{stroke:var(--attack)}
+.loop .stn{transition:fill .2s}
+.loop .stn.on{fill:var(--attack)}
+.loop .stn.done{fill:#F6C9CE}
+.loop text.n{font:800 15px var(--font-data);fill:var(--ink);text-anchor:middle}
+.loop .train{fill:var(--ink);stroke:#fff;stroke-width:3}
+.loop .mid{font:700 17px var(--font-sign);fill:var(--ink-2);text-anchor:middle}
+.devs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+@media(max-width:560px){.devs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dev{background:#fff;border-radius:5px;padding:7px 6px 5px;display:grid;gap:2px;font:700 .76rem/1.15 var(--font-data);color:var(--ink);box-shadow:inset 0 0 0 2px var(--rule);transition:background .25s,box-shadow .25s,color .25s}
+.dev .ty{font-size:.72rem;color:var(--ink-2)}
+.dev .pw{display:flex;align-items:center;gap:3px;font-size:.7rem;color:#8A5A00}
+.dev .pw svg{width:11px;height:11px}
+.dev.strong .pw{color:var(--ok)}
+.dev.scan{box-shadow:inset 0 0 0 3px var(--amber)}
+.dev.bot{background:var(--attack);color:#fff;box-shadow:inset 0 0 0 2px #8E1424}
+.dev.bot .ty,.dev.bot .pw{color:#FFD9DD}
+.dev.flash{animation:flash .5s ease-out}
+@keyframes flash{0%{transform:scale(1.18)}100%{transform:scale(1)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.84rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:14px;height:14px;border-radius:3px;flex:none;box-shadow:inset 0 0 0 2px var(--rule);background:#fff}
+.sw.bot{background:var(--attack);box-shadow:none}.sw.weak{box-shadow:inset 0 0 0 2px var(--c2)}.sw.strong{box-shadow:inset 0 0 0 2px var(--ok)}
+
+/* hijack */
+.ends{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media(max-width:620px){.ends{grid-template-columns:minmax(0,1fr)}}
+.end{padding:12px 14px 14px}
+.end .b-head{margin-bottom:8px}
+.end .kv{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font:600 .74rem/1.25 var(--font-sign);color:var(--board-ink-2)}
+.end .kv .cell{font-size:1.45em}
+.end.atk .b-head{color:var(--lamp-bad)}
+.sync{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 16px;border-radius:9px;font:700 1rem/1.35 var(--font-sign);background:#fff;box-shadow:inset 0 0 0 2px var(--rule)}
+.sync .big{font:800 1.5rem/1 var(--font-data)}
+.sync .st{margin-left:auto;font:800 .8rem/1 var(--font-data);letter-spacing:.06em;text-transform:uppercase;padding:7px 10px 5px;border-radius:4px;color:#fff;background:var(--ok)}
+.sync.bad{background:repeating-linear-gradient(-45deg,#FBE3E4 0 6px,#fff 6px 13px);box-shadow:inset 0 0 0 2px var(--attack)}
+.sync.bad .st{background:var(--attack)}
+.sync.closed .st{background:var(--ink)}
+
+/* tables */
+.tbl{overflow-x:auto;margin:16px 0 0}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:.94rem;line-height:1.45}
+th,td{text-align:left;vertical-align:top;padding:11px 14px 9px 0;border-bottom:1px solid var(--rule)}
+thead th{font:800 .8rem/1.2 var(--font-sign);border-bottom:3px solid var(--ink);padding-bottom:8px}
+tbody th{font-weight:800}
+td .try{font:700 .78rem/1.3 var(--font-data);color:var(--enamel);white-space:nowrap}
+tr.mark td,tr.mark th{background:rgba(242,177,52,.18)}
+.cite{font:600 .74em/1 var(--font-data);color:var(--enamel);text-decoration:none;white-space:nowrap;margin-left:2px}
+.cite:hover{text-decoration:underline}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 34px;margin:20px 0 0}
+.gloss>div{padding:14px 0 12px;border-top:2px solid var(--ink)}
+.gloss>div:target{background:rgba(242,177,52,.22)}
+.gloss dt{font:800 1.02rem/1.25 var(--font-sign);margin-bottom:4px}
+.gloss dd{margin:0;font-size:.93rem;color:var(--ink-2)}
+.src ol{padding-left:22px;font-size:.93rem}
+.src li{margin-bottom:9px}
+.src li:target{background:rgba(242,177,52,.22)}
+footer{margin-top:72px;background:var(--enamel-2);color:#D6DEEA;padding:34px 0 46px;font-size:.92rem}
+footer p{max-width:80ch}
+
+/* definition strip */
+.def{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:760px;margin:0 auto;background:var(--board);color:var(--pin);border-radius:10px;padding:14px 52px 14px 18px;box-shadow:inset 0 0 0 1px var(--board-rule),0 18px 36px -12px rgba(0,0,0,.65)}
+.def[hidden]{display:none}
+.def .k{display:block;font:800 1rem/1.3 var(--font-sign);color:var(--amber);margin-bottom:3px}
+.def p{margin:0;font-size:.95rem;line-height:1.5}
+.def a{color:var(--route-hi)}
+.def .x{position:absolute;top:8px;right:8px;width:40px;height:40px;border:0;border-radius:6px;background:transparent;color:var(--pin);cursor:pointer;display:grid;place-items:center}
+.def .x:hover{background:#22252A}
+
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M16 8.6a5 5 0 0 1 0 6.8M18.6 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor"/><path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor"/><path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.3-1.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+</svg>
+
+<nav class="bar" aria-label="Platforms">
+  <div class="wide">
+    <a class="bar-home" href="#top"><span class="code">M07</span><span class="bar-title">Network-level attacks</span></a>
+    <ol>
+      <li><a href="#syn"><span class="pl">1</span><span class="lbl">SYN flood</span></a></li>
+      <li><a href="#mirai"><span class="pl">2</span><span class="lbl">Mirai &amp; DGA</span></a></li>
+      <li><a href="#hijack"><span class="pl">3</span><span class="lbl">Session hijack</span></a></li>
+      <li><a href="#compare">Compare</a></li>
+      <li><a href="#terms">Terms</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </div>
+</nav>
+
+<header class="mast" id="top">
+  <div class="wide">
+    <div class="sign">
+      <h1>Three <span class="nw">network-level</span> attacks</h1>
+      <p class="lede">Each attack below runs on a small working model. Start the attack, then turn on a defense and run it again. A guide next to each model says which button to press, and a panel under it explains each step.</p>
+      <p class="meta">Kelompok 4 / Cybersecurity, semester 5 / Module 07, part 2 (slides 37 to 81) / EC-Council EHE v2</p>
+    </div>
+    <div class="board hero-board" id="hero-board">
+      <div class="b-head"><span>Choose a platform</span><span class="b-stat">Time <span id="clock"></span></span></div>
+      <div class="row b-cols"><span style="--w:1">#</span><span style="--w:11">Attack</span><span class="hide-s" style="--w:17">What it abuses</span><span class="hide-s" style="--w:5">Slides</span><span style="--w:5">Model</span></div>
+      <div id="hero-rows"></div>
+    </div>
+    <p class="tip"><b>Kelompok 4's topics</b> from the Week 10 activity sheet: slide 9, <i>Mekanisme Serangan TCP SYN Flood</i> (platform 1); slide 16, <i>Siklus Infeksi &amp; DGA Botnet (Mirai Case)</i> (platform 2); slide 29, <i>Proses 3 Fase Pembajakan Sesi TCP</i> (platform 3). The sheet counts slides from the start of part 2, so these are numbered 45, 52 and 65 on the slides themselves, which is the numbering used below.</p>
+    <p class="tip">Dotted words open a short definition with its source. The models run only inside this page: no real traffic, and every address and domain comes from ranges reserved for documentation.</p>
+  </div>
+</header>
+
+<main>
+<!-- ============ PLATFORM 1 ============ -->
+<section class="platform" id="syn" aria-labelledby="syn-h">
+  <div class="wide">
+    <div class="sign p-sign">
+      <span class="p-num" aria-hidden="true">1</span>
+      <div><h2 id="syn-h"><span class="vh">Platform 1: </span>TCP SYN flood</h2><p class="sub">Filling a server's waiting list with connections that never finish</p></div>
+      <span class="ref">Slides 44 to 46</span>
+    </div>
+    <div class="col">
+      <p class="lead">Every TCP connection opens with a <button type="button" class="term" data-t="handshake">3-way handshake</button>. The server sets aside memory for the connection, a <button type="button" class="term" data-t="tcb">TCB</button>, as soon as the first packet arrives, before it knows the sender is real. A SYN flood sends thousands of first packets from <button type="button" class="term" data-t="spoof">spoofed</button> addresses. Each leaves a <button type="button" class="term" data-t="halfopen">half-open</button> connection waiting for an answer that never comes, until the <button type="button" class="term" data-t="backlog">backlog</button> is full and real users are turned away.</p>
+    </div>
+
+    <figure class="sim" id="sim-syn" aria-labelledby="syn-cap">
+      <div class="sim-head">
+        <h3 id="syn-cap">Model 1: the server's waiting list</h3>
+        <p>The black board is the server's SYN queue. Each row is one half-open connection, and each one uses memory on the server. Real users are shown in blue so you can tell them apart. The server itself cannot. The clock runs 5&times; faster, and the queue is cut to 8 rows so you can watch each one.</p>
+      </div>
+      <ol class="rail" aria-label="Attack stages from slide 45">
+        <li>SYN spoofing</li><li>SYN/ACK orphaned</li><li>Queue overflow</li><li>Denial of service</li>
+      </ol>
+      <div class="sim-grid">
+        <div class="sim-main">
+          <svg class="lines" viewBox="0 0 600 226" role="img" aria-label="Line diagram: a real user and an attacker both connect to the server; the server's replies to spoofed sources go to offline addresses.">
+            <path id="p-user" class="ln user" d="M24 42 H290 L346 98 H420"/>
+            <path id="p-atk" class="ln atk" d="M24 182 H290 L346 126 H420"/>
+            <path id="p-f1" class="ln ghost" d="M480 112 H500 L560 52 H572"/>
+            <path id="p-f2" class="ln ghost" d="M480 112 H572"/>
+            <path id="p-f3" class="ln ghost" d="M480 112 H500 L560 172 H572"/>
+            <circle class="stn" cx="24" cy="42" r="12"/>
+            <circle class="stn atk" cx="24" cy="182" r="12"/>
+            <circle class="stn ghost" cx="582" cy="52" r="10"/><circle class="stn ghost" cx="582" cy="112" r="10"/><circle class="stn ghost" cx="582" cy="172" r="10"/>
+            <rect class="stn" x="420" y="82" width="60" height="60" rx="10"/>
+            <text x="10" y="16" class="user">Real user</text><text x="104" y="16" class="sub">192.0.2.23</text>
+            <text x="10" y="220" class="atk">Attacker</text><text x="98" y="220" class="sub">fake source IPs</text>
+            <text x="450" y="170" text-anchor="middle">Server</text><text x="450" y="190" text-anchor="middle" class="sub">:80</text>
+            <text x="596" y="22" text-anchor="end" class="sub">spoofed sources, offline</text>
+          </svg>
+          <div class="board" id="syn-board">
+            <div class="b-head"><span>Server 192.0.2.80:80</span><span class="hide-s">SYN queue</span><span class="b-stat"><span class="lamp ok" id="syn-lamp"></span><span id="syn-fill"></span></span></div>
+            <div class="row b-cols"><span class="hide-s" style="--w:2">Slot</span><span style="--w:15">From</span><span style="--w:8">State</span><span style="--w:3">Hold</span></div>
+            <div id="syn-rows"></div>
+            <div class="row" id="syn-in"></div>
+            <div class="b-foot" id="syn-foot"></div>
+          </div>
+          <div class="pa"><svg class="ico" aria-hidden="true"><use href="#i-speaker"/></svg><div><span class="pa-label">Announcement</span><p class="pa-now" aria-live="polite"></p><p class="pa-prev"></p></div></div>
+        </div>
+        <div class="sim-side">
+          <div class="move"><div class="move-top"><span>Your move</span><span class="move-n"></span></div><p class="move-text"></p><button type="button" class="linkbtn move-restart">Restart guide</button></div>
+          <div class="ctl">
+            <div class="btns">
+              <button type="button" class="btn" id="syn-real">Connect as a real user</button>
+              <button type="button" class="btn atk" id="syn-spoof">Send 1 spoofed SYN</button>
+              <button type="button" class="btn atk" id="syn-flood" aria-pressed="false">Start flood</button>
+            </div>
+            <label class="field" for="syn-rate"><span>Flood rate <output id="syn-rate-o"></output></span><input type="range" id="syn-rate" min="1" max="20" value="5"></label>
+            <label class="field" for="syn-backlog"><span>Queue size <output id="syn-backlog-o"></output></span><input type="range" id="syn-backlog" min="4" max="16" step="4" value="8"></label>
+            <label class="field" for="syn-retries"><span>SYN/ACK retries <output id="syn-retries-o"></output></span><input type="range" id="syn-retries" min="0" max="5" value="5"></label>
+            <div class="toggle-row"><span id="syn-ck-l">SYN cookies</span><button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="syn-ck-l" id="syn-cookies"><span class="lamp"></span><span class="sw-t">Off</span></button></div>
+            <pre class="sysctl" id="syn-sysctl" aria-label="Linux settings matching the controls"></pre>
+            <div><button type="button" class="btn ghost" id="syn-reset">Reset model</button></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <h3 class="h">Normal handshake vs SYN flood</h3>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Packet</th><th scope="col">Normal connection</th><th scope="col">SYN flood</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1. SYN</th><td>From the real client, seq=100</td><td>From the attacker, with a fake source address</td></tr>
+        <tr><th scope="row">2. SYN/ACK</th><td>Server reserves a slot, replies seq=300 ack=101 to the client</td><td>Server reserves a slot, replies to an address that is offline <a class="cite" href="#src-4987">RFC 4987 §2.2</a></td></tr>
+        <tr><th scope="row">3. ACK</th><td>Arrives with seq=101 ack=301; slot freed within milliseconds</td><td>Never arrives; Linux keeps retrying for about 63 s by default <a class="cite" href="#src-kernel">kernel docs</a>, 4.4BSD-derived systems up to 511 s <a class="cite" href="#src-4987">RFC 4987 §2.2</a></td></tr>
+        <tr><th scope="row">Result</th><td>Connection ESTABLISHED, user served</td><td>Queue full, new SYNs dropped, real users time out</td></tr>
+      </tbody>
+    </table></div>
+    <div class="col"><p class="note"><strong>Why the fake addresses must be offline</strong>If a spoofed address belonged to a live machine, that machine would answer the unexpected SYN/ACK with a <button type="button" class="term" data-t="rst">RST</button>, and the server would free the slot at once <a class="cite" href="#src-4987">RFC 4987 §2.2</a>.</p></div>
+
+    <h3 class="h">Defenses, and what each one costs</h3>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Defense</th><th scope="col">What it does</th><th scope="col">The catch</th><th scope="col">In the model</th></tr></thead>
+      <tbody>
+        <tr class="mark"><th scope="row"><button type="button" class="term" data-t="cookie">SYN cookies</button></th><td>Encodes the connection into the SYN/ACK sequence number and stores nothing until a valid ACK comes back</td><td>Some TCP options do not fit in the cookie <a class="cite" href="#src-4987">RFC 4987 §3.6</a>. Linux treats it as a fallback for when the queue overflows <a class="cite" href="#src-kernel">kernel docs</a></td><td><span class="try">SYN cookies switch</span></td></tr>
+        <tr><th scope="row">Bigger backlog</th><td>Holds more half-open connections</td><td>Only buys time, because a faster flood fills it again <a class="cite" href="#src-4987">§3.2</a></td><td><span class="try">Queue size</span></td></tr>
+        <tr><th scope="row">Fewer SYN/ACK retries</th><td>Frees each slot sooner</td><td>Helps only against slow floods, and slow real clients may fail <a class="cite" href="#src-4987">§3.3</a></td><td><span class="try">SYN/ACK retries</span></td></tr>
+        <tr><th scope="row">SYN cache</th><td>Keeps a small record per SYN and builds the full TCB only after the final ACK</td><td>In tests, real connections took about 15% longer to set up while under attack <a class="cite" href="#src-4987">§3.5</a></td><td>Not modeled</td></tr>
+        <tr><th scope="row">Filtering</th><td>Networks drop packets whose source address is forged</td><td>Works only where deployed; a botnet does not need spoofing <a class="cite" href="#src-4987">§3.1</a></td><td>Not modeled</td></tr>
+        <tr><th scope="row">Firewall or proxy</th><td>A middlebox completes the handshake and passes on only finished connections</td><td>Moves the load onto the middlebox <a class="cite" href="#src-4987">§3.8</a></td><td>Not modeled</td></tr>
+      </tbody>
+    </table></div>
+    <div class="col"><p class="note"><strong>Spotting it on a server</strong>Count half-open connections with <code>netstat -an | grep SYN_RECV | wc -l</code>; the model's board footer shows the same count. The slide treats more than 100 as an early sign of a SYN flood (slide 58). On Linux each SYN_RECV entry costs about 304 bytes of memory <a class="cite" href="#src-kernel">kernel docs</a>.</p>
+      <p class="note"><strong>Finding who is sending</strong>Slide 58's second command counts connections per source address: <code>netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n</code>. Against a spoofed flood it finds nothing useful, because every SYN carries a different fake address, so each one appears once, as on the model's board. It helps against a botnet that floods from its real addresses, where a few sources show up hundreds of times.</p></div>
+  </div>
+</section>
+
+<!-- ============ PLATFORM 2 ============ -->
+<section class="platform" id="mirai" aria-labelledby="mirai-h">
+  <div class="wide">
+    <div class="sign p-sign">
+      <span class="p-num" aria-hidden="true">2</span>
+      <div><h2 id="mirai-h"><span class="vh">Platform 2: </span>Mirai botnet and the DGA</h2><p class="sub">How cameras and routers with factory passwords became one remote-controlled botnet</p></div>
+      <span class="ref">Slides 51 and 52</span>
+    </div>
+    <div class="col">
+      <p class="lead">In 2016 Mirai took over about 600,000 cameras, video recorders and routers at its peak <a class="cite" href="#src-mirai">Antonakakis §4.2</a>, just by logging in over <button type="button" class="term" data-t="telnet">Telnet</button> with factory-default passwords. The infected devices formed a <button type="button" class="term" data-t="botnet">botnet</button> that flooded targets on orders from a <button type="button" class="term" data-t="c2">C2</button> server. The bots only find victims; a separate loader server does the infecting <a class="cite" href="#src-mirai">§2</a>.</p>
+      <p class="note"><strong>Slide 52 puts Mirai and DGA together. They came at different times.</strong>The 2016 Mirai reached its C2 through domain names written into its code, and researchers pulled 67 of them out of the binaries <a class="cite" href="#src-mirai">§3.3</a>. A <button type="button" class="term" data-t="dga">DGA</button> appeared later in one short-lived variant, used only when those hardcoded domains failed to resolve <a class="cite" href="#src-netlab">Netlab, Dec 2016</a>. The two models below keep them apart.</p>
+      <p class="note"><strong>Two numbers that differ from slide 52</strong>The slide gives about 60 default logins and "millions" of devices. The Mirai source code holds 62 username and password pairs, and the measured peak was about 600,000 devices at once <a class="cite" href="#src-mirai">Antonakakis §2, §4.2</a>. The slide also describes DGAs that make thousands of names a day; that is true of DGAs in general, while the Mirai variant made one <a class="cite" href="#src-netlab">Netlab</a>.</p>
+    </div>
+
+    <figure class="sim" id="sim-mirai" aria-labelledby="mi-cap">
+      <div class="sim-head">
+        <h3 id="mi-cap">Model 2: the infection loop</h3>
+        <p>The red loop line is one infection, stop by stop, as described in the Mirai paper <a class="cite" href="#src-mirai">§2</a>. Below it is a neighborhood of 24 devices. Device .10 is already a bot, and the rest of the internet is scanning too.</p>
+      </div>
+      <div class="sim-grid">
+        <div class="sim-main">
+          <svg class="lines loop" viewBox="0 0 600 300" role="img" aria-label="Loop line with six stops: scan, brute-force, report, load, lock in, await orders.">
+            <path id="loop-path" class="ln" d="M100 60 H500 A40 40 0 0 1 540 100 V200 A40 40 0 0 1 500 240 H100 A40 40 0 0 1 60 200 V100 A40 40 0 0 1 100 60 Z"/>
+            <g class="stops">
+              <circle class="stn" cx="150" cy="60" r="15"/><circle class="stn" cx="300" cy="60" r="15"/><circle class="stn" cx="450" cy="60" r="15"/>
+              <circle class="stn" cx="450" cy="240" r="15"/><circle class="stn" cx="300" cy="240" r="15"/><circle class="stn" cx="150" cy="240" r="15"/>
+            </g>
+            <g aria-hidden="true">
+              <text class="n" x="150" y="65">1</text><text class="n" x="300" y="65">2</text><text class="n" x="450" y="65">3</text>
+              <text class="n" x="450" y="245">4</text><text class="n" x="300" y="245">5</text><text class="n" x="150" y="245">6</text>
+            </g>
+            <text x="150" y="28" text-anchor="middle">Scan</text><text x="300" y="28" text-anchor="middle">Brute-force</text><text x="450" y="28" text-anchor="middle">Report</text>
+            <text x="450" y="284" text-anchor="middle">Load</text><text x="300" y="284" text-anchor="middle">Lock in</text><text x="150" y="284" text-anchor="middle">Await orders</text>
+            <text class="sub hide-s" x="150" y="100" text-anchor="middle">TCP 23, 2323</text><text class="sub hide-s" x="300" y="100" text-anchor="middle">10 of 62 pairs</text><text class="sub hide-s" x="450" y="100" text-anchor="middle">IP + login</text>
+            <text class="sub hide-s" x="450" y="212" text-anchor="middle">push build</text><text class="sub hide-s" x="300" y="212" text-anchor="middle">hide in RAM</text><text class="sub hide-s" x="150" y="212" text-anchor="middle">C2, then scan</text>
+            <text class="mid" id="loop-mid" x="300" y="156"></text>
+            <circle class="train" id="loop-train" r="9" cx="150" cy="60"/>
+          </svg>
+          <div class="devs" id="mi-grid" aria-label="Neighborhood of 24 devices"></div>
+          <div class="legend"><span><i class="sw weak"></i>Factory-default password</span><span><i class="sw strong"></i>Owner's own password</span><span><i class="sw bot"></i>Infected (bot)</span></div>
+          <div class="board" id="mi-board">
+            <div class="b-head"><span>Scan log</span><span class="b-stat"><span class="lamp" id="mi-lamp"></span>Newest on top</span></div>
+            <div class="row b-cols"><span style="--w:14">Target</span><span style="--w:16">Event</span></div>
+            <div id="mi-rows"></div>
+            <div class="b-foot" id="mi-foot"></div>
+          </div>
+          <div class="pa"><svg class="ico" aria-hidden="true"><use href="#i-speaker"/></svg><div><span class="pa-label">Announcement</span><p class="pa-now" aria-live="polite"></p><p class="pa-prev"></p></div></div>
+        </div>
+        <div class="sim-side">
+          <div class="move"><div class="move-top"><span>Your move</span><span class="move-n"></span></div><p class="move-text"></p><button type="button" class="linkbtn move-restart">Restart guide</button></div>
+          <div class="ctl">
+            <div class="btns">
+              <button type="button" class="btn atk" id="mi-next">Next stop</button>
+              <button type="button" class="btn atk" id="mi-auto" aria-pressed="false">Auto-spread</button>
+            </div>
+            <div class="btns">
+              <button type="button" class="btn" id="mi-reboot">Reboot all devices</button>
+              <button type="button" class="btn" id="mi-pw">Change default passwords</button>
+            </div>
+            <label class="field" for="mi-weak"><span>Devices with default passwords <output id="mi-weak-o"></output></span><input type="range" id="mi-weak" min="10" max="100" step="10" value="60"></label>
+            <div><button type="button" class="btn ghost" id="mi-reset">Reset model</button></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="sim" id="sim-dga" aria-labelledby="dga-cap">
+      <div class="sim-head">
+        <h3 id="dga-cap">Model 3: how bots find their C2</h3>
+        <p>Compare a fixed C2 address with a <button type="button" class="term" data-t="dga">DGA</button>. Each day the bot and the operator run the same function on the date and get the same list of names. The operator registers one; the rest return <button type="button" class="term" data-t="nxdomain">NXDOMAIN</button>. This is a teaching formula with reserved test domains, not Mirai's real algorithm, and it makes 5 names a day where the Mirai variant made 1 <a class="cite" href="#src-netlab">Netlab</a>.</p>
+      </div>
+      <div class="sim-grid">
+        <div class="sim-main">
+          <div class="board" id="dga-board">
+            <div class="b-head"><span>C2 lookups</span><span class="b-stat">Day <span id="dga-day"></span></span></div>
+            <div class="row b-cols"><span style="--w:20">Domain</span><span style="--w:10">Answer</span></div>
+            <div id="dga-rows"></div>
+            <div class="b-foot" id="dga-foot"></div>
+          </div>
+          <pre class="sysctl" id="dga-formula" aria-label="Domain generation inputs"></pre>
+          <div class="pa"><svg class="ico" aria-hidden="true"><use href="#i-speaker"/></svg><div><span class="pa-label">Announcement</span><p class="pa-now" aria-live="polite"></p><p class="pa-prev"></p></div></div>
+        </div>
+        <div class="sim-side">
+          <div class="move"><div class="move-top"><span>Your move</span><span class="move-n"></span></div><p class="move-text"></p><button type="button" class="linkbtn move-restart">Restart guide</button></div>
+          <div class="ctl">
+            <div class="seg" role="group" aria-label="How the bot finds C2">
+              <button type="button" id="dga-hard" aria-pressed="true">Hardcoded C2</button>
+              <button type="button" id="dga-dga" aria-pressed="false">DGA</button>
+            </div>
+            <div class="btns">
+              <button type="button" class="btn ghost" id="dga-prev">Previous day</button>
+              <button type="button" class="btn" id="dga-next">Next day</button>
+            </div>
+            <div class="btns">
+              <button type="button" class="btn" id="dga-down">Take down domain</button>
+              <button type="button" class="btn" id="dga-sink">Reverse the algorithm</button>
+            </div>
+            <div><button type="button" class="btn ghost" id="dga-reset">Reset model</button></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <h3 class="h">Hardcoded C2 vs DGA</h3>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col"></th><th scope="col">Hardcoded C2 (Mirai, 2016)</th><th scope="col">DGA (later variant)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Where the address comes from</th><td>Written into the malware</td><td>Computed each day from the date and a shared seed</td></tr>
+        <tr><th scope="row">To cut the bots off</th><td>Take down one domain</td><td>Beat every future domain</td></tr>
+        <tr><th scope="row">Defender's move</th><td>Pull the names from the binary and block or <button type="button" class="term" data-t="sinkhole">sinkhole</button> them</td><td>Reverse the algorithm, register names ahead, watch for bursts of NXDOMAIN <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a></td></tr>
+        <tr><th scope="row">Weak spot</th><td>A single point of failure</td><td>The algorithm can be recovered, and the failed lookups are noisy</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 class="h">How big it got</h3>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Date</th><th scope="col">Event</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1 Aug 2016</th><td>First scan; 64,500 devices infected within 20 hours <a class="cite" href="#src-mirai">§4.1</a></td></tr>
+        <tr><th scope="row">21 Sep 2016</th><td>623 Gbps attack on the Krebs on Security blog <a class="cite" href="#src-mirai">§6.3</a></td></tr>
+        <tr><th scope="row">30 Sep 2016</th><td>Source code published; copycat variants follow <a class="cite" href="#src-mirai">§5.2</a></td></tr>
+        <tr><th scope="row">21 Oct 2016</th><td>Attack on DNS provider Dyn disrupts Amazon, GitHub, Netflix, Twitter and others. It included SYN floods on port 53, the attack from platform 1 <a class="cite" href="#src-mirai">§6.3</a></td></tr>
+        <tr><th scope="row">End of Nov 2016</th><td>Peak of about 600,000 infected devices <a class="cite" href="#src-mirai">§4.2</a></td></tr>
+        <tr><th scope="row">9 Dec 2016</th><td>A variant with a DGA is reported, spreading through ports 7547 and 5555 <a class="cite" href="#src-netlab">Netlab</a></td></tr>
+      </tbody>
+    </table></div>
+    <div class="col"><p class="note"><strong>Defense</strong>Changing default passwords and turning off Telnet stops the infection at the source. A reboot alone clears the malware from RAM, but an unchanged device is found and infected again <a class="cite" href="#src-cisa">CISA TA16-288A</a>. Against a DGA, flag machines with many NXDOMAIN answers and sinkhole the predicted names <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a>.</p>
+      <p class="note"><strong>Spotting an infected device</strong>A bot scans for the next victim, so on your own network a camera or router that suddenly opens many outbound connections to TCP 23 and 2323 is probably infected <a class="cite" href="#src-mirai">Antonakakis §2</a>. Block outbound Telnet from IoT devices at the firewall, so an infected one cannot recruit others.</p></div>
+  </div>
+</section>
+
+<!-- ============ PLATFORM 3 ============ -->
+<section class="platform" id="hijack" aria-labelledby="hj-h">
+  <div class="wide">
+    <div class="sign p-sign">
+      <span class="p-num" aria-hidden="true">3</span>
+      <div><h2 id="hj-h"><span class="vh">Platform 3: </span>TCP session hijacking in 3 phases</h2><p class="sub">Taking over a live connection by forging the numbers it trusts</p></div>
+      <span class="ref">Slides 63 to 66</span>
+    </div>
+    <div class="col">
+      <p class="lead">Once a TCP connection is open, each end accepts any packet with the right addresses, ports and <button type="button" class="term" data-t="seqack">SEQ/ACK</button> numbers. Nothing else proves who sent it. An attacker <button type="button" class="term" data-t="onpath">on the path</button> between client and server can read those numbers, knock the two ends out of step, then speak to the server as the client <a class="cite" href="#src-joncheray">Joncheray 1995</a>.</p>
+    </div>
+
+    <figure class="sim" id="sim-hj" aria-labelledby="hj-cap">
+      <div class="sim-head">
+        <h3 id="hj-cap">Model 4: hijack a Telnet session</h3>
+        <p>The handshake is done: the client started at 100, the server at 300, the same numbers as slide 63. The three boards show what each side expects next. The server accepts a packet only if its SEQ equals the byte it expects next (inside its window) <a class="cite" href="#src-9293">RFC 9293 §3.10.7.4</a>.</p>
+      </div>
+      <ol class="rail" aria-label="Hijack phases from slide 65">
+        <li>Track and sniff</li><li>Desynchronize</li><li>Inject</li><li class="side">ACK storm</li>
+      </ol>
+      <div class="sim-grid">
+        <div class="sim-main">
+          <svg class="lines" viewBox="0 0 600 132" role="img" aria-label="Line diagram: the client and server are connected through a path where the attacker sits.">
+            <path id="hj-line" class="ln user" d="M30 64 H570"/>
+            <circle class="stn" cx="30" cy="64" r="13"/>
+            <rect class="stn atk" x="262" y="46" width="76" height="36" rx="18"/>
+            <rect class="stn" x="540" y="40" width="48" height="48" rx="9"/>
+            <text x="12" y="24" class="user">Client</text><text x="86" y="24" class="sub">192.0.2.23</text>
+            <text x="300" y="118" text-anchor="middle" class="atk">Attacker, on the path</text>
+            <text x="590" y="24" text-anchor="end">Server</text><text x="590" y="118" text-anchor="end" class="sub">:23 Telnet</text>
+          </svg>
+          <div class="ends">
+            <div class="board end"><div class="b-head"><span>Client</span></div><div class="kv"><span>Next SEQ it sends</span><span id="hj-cn"></span></div><div class="kv"><span>Next byte it expects</span><span id="hj-ce"></span></div></div>
+            <div class="board end atk"><div class="b-head"><span>Attacker's copy</span></div><div class="kv"><span>Client's next SEQ</span><span id="hj-ac"></span></div><div class="kv"><span>Server's next SEQ</span><span id="hj-as"></span></div></div>
+            <div class="board end"><div class="b-head"><span>Server</span></div><div class="kv"><span>Next byte it expects</span><span id="hj-se"></span></div><div class="kv"><span>Next SEQ it sends</span><span id="hj-sn"></span></div></div>
+          </div>
+          <div class="sync" id="hj-sync"></div>
+          <div class="board" id="hj-board">
+            <div class="b-head"><span>Packet log</span><span>Newest on top</span></div>
+            <div class="row b-cols"><span style="--w:7">Path</span><span style="--w:4">SEQ</span><span style="--w:4">ACK</span><span style="--w:8">Carries</span><span style="--w:8">Result</span></div>
+            <div id="hj-rows"></div>
+          </div>
+          <div class="pa"><svg class="ico" aria-hidden="true"><use href="#i-speaker"/></svg><div><span class="pa-label">Announcement</span><p class="pa-now" aria-live="polite"></p><p class="pa-prev"></p></div></div>
+        </div>
+        <div class="sim-side">
+          <div class="move"><div class="move-top"><span>Your move</span><span class="move-n"></span></div><p class="move-text"></p><button type="button" class="linkbtn move-restart">Restart guide</button></div>
+          <div class="ctl">
+            <div class="btns"><button type="button" class="btn" id="hj-send">Client sends a command</button></div>
+            <div class="btns">
+              <button type="button" class="btn atk" id="hj-null">Inject null data</button>
+              <button type="button" class="btn atk" id="hj-cmd">Inject forged command</button>
+            </div>
+            <div class="field"><span>Protection on this connection</span>
+              <div class="seg" role="group" aria-label="Protection">
+                <button type="button" id="hj-none" aria-pressed="true">None</button>
+                <button type="button" id="hj-tls" aria-pressed="false">TLS</button>
+                <button type="button" id="hj-ipsec" aria-pressed="false">IPsec (ESP)</button>
+              </div>
+            </div>
+            <div><button type="button" class="btn ghost" id="hj-reset">Reset model</button></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <div class="col"><p class="note"><strong>Two ways to desynchronize</strong>The model injects harmless null data (Telnet no-ops) into an open session, so the server's count jumps ahead of the client's. The other way, early desync, strikes during setup: the attacker resets the half-built connection with an <button type="button" class="term" data-t="rst">RST</button> and opens a new one with a different starting number <a class="cite" href="#src-joncheray">Joncheray</a>. Either way the result is the same <button type="button" class="term" data-t="desync">desynchronized</button> state, and an <button type="button" class="term" data-t="ackstorm">ACK storm</button> follows.</p>
+      <p class="note"><strong>Spotting it</strong>A network IDS sees what the packet log in the model shows: a sudden jump in a connection's sequence numbers (the "SEQ Jump" indicator on slide 80) and bursts of empty ACKs going back and forth between two hosts. The lab tool on slides 66 and 67, Hunt, does the same three phases on a real LAN: it lists active connections, resets or desynchronizes one, and injects into it.</p></div>
+
+    <h3 class="h">Network-level vs application-level hijacking</h3>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col"></th><th scope="col">Network-level (this model)</th><th scope="col">Application-level</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Layer</th><td>3 and 4: IP and TCP</td><td>7: HTTP and HTTPS</td></tr>
+        <tr><th scope="row">What is taken over</th><td>The TCP stream itself</td><td>The session cookie or token</td></tr>
+        <tr><th scope="row">How</th><td>Sniff SEQ/ACK, desynchronize, inject; RST tricks</td><td>XSS, session fixation, sniffing cookies sent over plain HTTP</td></tr>
+        <tr><th scope="row">Works against</th><td>Any TCP application</td><td>Web applications</td></tr>
+        <tr><th scope="row">Main defense</th><td>Encrypt and authenticate packets (TLS, IPsec); unpredictable <button type="button" class="term" data-t="isn">ISNs</button> stop attackers off the path <a class="cite" href="#src-6528">RFC 6528</a></td><td>Cookie flags <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>, plus HSTS (slides 76 to 78)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ COMPARE ============ -->
+<section class="platform" id="compare" aria-labelledby="cmp-h">
+  <div class="wide">
+    <h2 id="cmp-h" style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900">The three attacks side by side</h2>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col"></th><th scope="col">SYN flood</th><th scope="col">Mirai</th><th scope="col">TCP session hijack</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Part of CIA hit</th><td>Availability</td><td>Availability, through the DDoS it launches; the devices themselves are taken over</td><td>Integrity and confidentiality</td></tr>
+        <tr><th scope="row">Layer</th><td>Transport (TCP)</td><td>Application (Telnet login) to recruit; its floods hit several layers</td><td>Network and transport (IP, TCP)</td></tr>
+        <tr><th scope="row">What it abuses</th><td>The server stores state before the client is proven real</td><td>Factory-default passwords on exposed Telnet</td><td>Trust in any packet with the right IP, port and SEQ/ACK</td></tr>
+        <tr><th scope="row">Attacker needs</th><td>A way to send many SYNs; spoofing hides the source</td><td>Internet reach to devices with Telnet open</td><td>A position on the path, or ISNs it can guess</td></tr>
+        <tr><th scope="row">Stages</th><td>4 (slide 45)</td><td>6-stop loop (paper §2)</td><td>3 phases (slide 65)</td></tr>
+        <tr><th scope="row">Best defense</th><td>SYN cookies; filtering and scrubbing upstream</td><td>Change default passwords, close Telnet, patch</td><td>Encryption with authentication: TLS, IPsec; random ISNs</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ TERMS ============ -->
+<section class="platform" id="terms" aria-labelledby="terms-h">
+  <div class="wide">
+    <h2 id="terms-h" style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900">Terms</h2>
+    <dl class="gloss">
+      <div id="t-handshake"><dt>3-way handshake</dt><dd>The three packets (SYN, SYN/ACK, ACK) that open a TCP connection before any data moves. <a class="cite" href="#src-9293">RFC 9293 §3.5</a></dd></div>
+      <div id="t-tcb"><dt>TCB</dt><dd>Transmission Control Block: the record a host keeps in memory for each connection, holding its addresses, ports, sequence numbers and state. <a class="cite" href="#src-9293">RFC 9293 §3.3.1</a></dd></div>
+      <div id="t-halfopen"><dt>Half-open connection (SYN_RECV)</dt><dd>A connection the server has answered with SYN/ACK but that has not received the final ACK yet. <a class="cite" href="#src-4987">RFC 4987 §2.2</a></dd></div>
+      <div id="t-backlog"><dt>Backlog (SYN queue)</dt><dd>The limit on how many half-open connections a listening port holds. When it is full, new SYNs are dropped. <a class="cite" href="#src-4987">RFC 4987 §2.2</a></dd></div>
+      <div id="t-spoof"><dt>IP spoofing</dt><dd>Writing a false source address into a packet, so the replies go somewhere else. <a class="cite" href="#src-4987">RFC 4987 §2.2</a></dd></div>
+      <div id="t-rst"><dt>RST</dt><dd>A TCP flag that aborts a connection at once. A host sends it when a packet does not belong to any connection it knows. <a class="cite" href="#src-9293">RFC 9293 §3.5.2</a></dd></div>
+      <div id="t-cookie"><dt>SYN cookie</dt><dd>A sequence number the server builds from a time counter, the client's MSS and a keyed hash of both addresses and ports, so it can store nothing until a valid ACK returns it. <a class="cite" href="#src-cookie">Bernstein</a></dd></div>
+      <div id="t-isn"><dt>ISN</dt><dd>Initial Sequence Number: each side's starting count. It must be hard to predict, or an attacker off the path can guess it. <a class="cite" href="#src-6528">RFC 6528 §3</a></dd></div>
+      <div id="t-seqack"><dt>SEQ and ACK numbers</dt><dd>SEQ numbers the bytes a side sends; ACK names the next byte it expects. A segment is accepted only if its SEQ falls inside the receiver's window. <a class="cite" href="#src-9293">RFC 9293 §3.4</a></dd></div>
+      <div id="t-botnet"><dt>Botnet</dt><dd>A group of malware-infected devices controlled remotely as one. <a class="cite" href="#src-cisa">CISA TA16-288A</a></dd></div>
+      <div id="t-c2"><dt>C2 (command and control)</dt><dd>The server an operator uses to send orders to infected devices. <a class="cite" href="#src-attack">MITRE ATT&amp;CK</a></dd></div>
+      <div id="t-telnet"><dt>Telnet</dt><dd>An old remote-login protocol that sends everything, passwords included, unencrypted. Mirai scanned for it on TCP ports 23 and 2323. <a class="cite" href="#src-mirai">Antonakakis §2</a></dd></div>
+      <div id="t-dga"><dt>DGA</dt><dd>Domain Generation Algorithm: code that malware and its operator both run to compute the same changing list of C2 domain names, usually from the date. <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a></dd></div>
+      <div id="t-nxdomain"><dt>NXDOMAIN</dt><dd>The DNS answer that means the name does not exist. Many of them from one machine is a sign of a DGA at work. <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a></dd></div>
+      <div id="t-sinkhole"><dt>Sinkhole</dt><dd>Defenders take control of a C2 name and point it at their own server. Bots that connect there are cut off from the operator and reveal themselves. <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a></dd></div>
+      <div id="t-onpath"><dt>On-path attacker</dt><dd>Also called man-in-the-middle: an attacker on the route between two hosts, who can see their packets and send forged ones, such as someone on the same Wi-Fi or a compromised router. <a class="cite" href="#src-joncheray">Joncheray</a></dd></div>
+      <div id="t-desync"><dt>Desynchronized state</dt><dd>Both ends think the connection is open, but each one's SEQ falls outside what the other expects, so their own packets get rejected. <a class="cite" href="#src-joncheray">Joncheray</a></dd></div>
+      <div id="t-ackstorm"><dt>ACK storm</dt><dd>Two desynchronized ends answering each other's unacceptable packets with ACKs, in a loop. The ACKs carry no data, so one lost packet ends it. <a class="cite" href="#src-joncheray">Joncheray</a></dd></div>
+      <div id="t-tls"><dt>TLS and IPsec ESP</dt><dd>TLS encrypts and authenticates the data inside a TCP connection; ESP does the same for whole IP payloads, TCP header included. Forged bytes fail their integrity checks. <a class="cite" href="#src-8446">RFC 8446</a> <a class="cite" href="#src-4303">RFC 4303</a></dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section class="platform src" id="sources" aria-labelledby="src-h">
+  <div class="wide">
+    <h2 id="src-h" style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900">Sources</h2>
+    <div class="col">
+      <ol>
+        <li id="src-9293">Eddy, W. (ed.). <em>Transmission Control Protocol (TCP)</em>. RFC 9293, IETF, Aug 2022. <a href="https://www.rfc-editor.org/rfc/rfc9293">rfc-editor.org/rfc/rfc9293</a></li>
+        <li id="src-4987">Eddy, W. <em>TCP SYN Flooding Attacks and Common Mitigations</em>. RFC 4987, IETF, Aug 2007. <a href="https://www.rfc-editor.org/rfc/rfc4987">rfc-editor.org/rfc/rfc4987</a></li>
+        <li id="src-cookie">Bernstein, D. J. <em>SYN cookies</em>. <a href="https://cr.yp.to/syncookies.html">cr.yp.to/syncookies.html</a></li>
+        <li id="src-kernel">The Linux kernel documentation. <em>IP sysctl</em> (tcp_synack_retries, tcp_syncookies, tcp_max_syn_backlog). <a href="https://docs.kernel.org/networking/ip-sysctl.html">docs.kernel.org/networking/ip-sysctl.html</a></li>
+        <li id="src-6528">Gont, F. and Bellovin, S. <em>Defending against Sequence Number Attacks</em>. RFC 6528, IETF, Feb 2012. <a href="https://www.rfc-editor.org/rfc/rfc6528">rfc-editor.org/rfc/rfc6528</a></li>
+        <li id="src-mirai">Antonakakis, M. et al. <em>Understanding the Mirai Botnet</em>. 26th USENIX Security Symposium, 2017. <a href="https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/antonakakis">usenix.org</a></li>
+        <li id="src-netlab">Liu, Y. <em>Now Mirai Has DGA Feature Built in</em>. 360 Netlab blog, 9 Dec 2016. <a href="https://blog.netlab.360.com/new-mirai-variant-with-dga/">blog.netlab.360.com</a></li>
+        <li id="src-cisa">US-CERT / CISA. <em>Heightened DDoS Threat Posed by Mirai and Other Botnets</em>. Alert TA16-288A, 14 Oct 2016. <a href="https://www.cisa.gov/news-events/alerts/2016/10/14/heightened-ddos-threat-posed-mirai-and-other-botnets">cisa.gov</a></li>
+        <li id="src-attack">MITRE ATT&amp;CK. <em>Dynamic Resolution: Domain Generation Algorithms</em>, T1568.002. <a href="https://attack.mitre.org/techniques/T1568/002/">attack.mitre.org</a></li>
+        <li id="src-joncheray">Joncheray, L. <em>A Simple Active Attack Against TCP</em>. 5th USENIX UNIX Security Symposium, 1995. <a href="https://www.usenix.org/conference/5th-usenix-unix-security-symposium/simple-active-attack-against-tcp">usenix.org</a></li>
+        <li id="src-8446">Rescorla, E. <em>The Transport Layer Security (TLS) Protocol Version 1.3</em>. RFC 8446, IETF, Aug 2018. <a href="https://www.rfc-editor.org/rfc/rfc8446">rfc-editor.org/rfc/rfc8446</a></li>
+        <li id="src-4303">Kent, S. <em>IP Encapsulating Security Payload (ESP)</em>. RFC 4303, IETF, Dec 2005. <a href="https://www.rfc-editor.org/rfc/rfc4303">rfc-editor.org/rfc/rfc4303</a></li>
+        <li id="src-5737">Arkko, J. et al. <em>IPv4 Address Blocks Reserved for Documentation</em>. RFC 5737, IETF, Jan 2010 (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, used for every address in the models). <a href="https://www.rfc-editor.org/rfc/rfc5737">rfc-editor.org/rfc/rfc5737</a></li>
+        <li id="src-2606">Eastlake, D. and Panitz, A. <em>Reserved Top Level DNS Names</em>. RFC 2606, IETF, Jun 1999 (.example, .test, .invalid, used for every domain in the models). <a href="https://www.rfc-editor.org/rfc/rfc2606">rfc-editor.org/rfc/rfc2606</a></li>
+      </ol>
+      <p>Lecture material: EHE Cyber Module 07, Part 2, Network Level Attacks (slides 44 to 46, 51 and 52, 58, 63 to 67, 76 and 80).</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wide"><p>The models are conceptual teaching tools. They run only inside this page, send no network traffic, and simplify on purpose: queues are scaled down, time is sped up, and the DGA formula is invented. Each simplification is stated next to the model it affects.</p></div></footer>
+
+<div class="def" id="def" hidden role="region" aria-label="Definition" aria-live="polite">
+  <span class="k" id="def-k"></span><p id="def-p"></p>
+  <button type="button" class="x" id="def-x" aria-label="Close definition"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+</div>
+
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', NB = ' ';
+const pad = (n, w) => String(n).padStart(w, '0');
+const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; };
+const rng = seed => { let x = seed >>> 0 || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; };
+
+/* ---------- split-flap tiles ---------- */
+function mkCell(w, cls = '') {
+  const c = document.createElement('span'); c.className = 'cell ' + cls; c.w = w;
+  for (let i = 0; i < w; i++) { const t = document.createElement('span'); t.className = 't'; t.textContent = NB; t.v = NB; c.append(t); }
+  return c;
+}
+function setCell(c, txt, o = {}) {
+  let s = String(txt ?? '').toUpperCase();
+  s = o.right ? s.padStart(c.w).slice(-c.w) : s.padEnd(c.w).slice(0, c.w);
+  for (let i = 0; i < c.w; i++) {
+    const t = c.children[i], v = s[i] === ' ' ? NB : s[i];
+    if (t.v === v) continue;
+    t.v = v; flip(t, v, o.spin ? 2 + (i % 3) : 0, o.spin ? (o.delay || 0) + i * 24 : 0);
+  }
+}
+function flip(t, v, spins, delay) {
+  clearTimeout(t.tm);
+  if (RM.matches) { t.textContent = v; return; }
+  const go = n => {
+    t.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(.06)', filter: 'brightness(1.9)' }, { transform: 'scaleY(1)' }], { duration: 130, easing: 'ease-in-out' });
+    t.tm = setTimeout(() => {
+      if (n > 0) { t.textContent = CH[Math.random() * CH.length | 0]; t.tm = setTimeout(() => go(n - 1), 30); }
+      else t.textContent = v;
+    }, 65);
+  };
+  if (delay) t.tm = setTimeout(() => go(spins), delay); else go(spins);
+}
+function mkRow(spec) { // spec: [[width, class], ...]
+  const el = document.createElement('div'); el.className = 'row';
+  const cells = spec.map(([w, c]) => { const x = mkCell(w, c); el.append(x); return x; });
+  return { el, cells };
+}
+
+/* ---------- packets travelling along SVG lines ---------- */
+function travel(svg, path, o = {}) {
+  const { color = 'var(--route)', dur = 650, from = 0, to = 1, label = '', fade = false } = o;
+  return new Promise(res => {
+    const len = path.getTotalLength();
+    const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'pkt');
+    const c = document.createElementNS(NS, 'circle'); c.setAttribute('r', 8); c.style.fill = color; g.append(c);
+    if (label) { const tx = document.createElementNS(NS, 'text'); tx.setAttribute('y', -15); tx.setAttribute('text-anchor', 'middle'); tx.textContent = label; g.append(tx); }
+    svg.append(g);
+    const at = p => { const pt = path.getPointAtLength(Math.max(0, Math.min(1, p)) * len); g.setAttribute('transform', `translate(${pt.x} ${pt.y})`); };
+    if (RM.matches) { at(to); setTimeout(() => { g.remove(); res(); }, 320); return; }
+    const t0 = performance.now();
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      at(from + (to - from) * e);
+      if (fade) g.style.opacity = String(1 - Math.max(0, (k - .55) / .45));
+      if (k < 1) requestAnimationFrame(step); else { g.remove(); res(); }
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+/* ---------- shared model chrome ---------- */
+function mkPA(root) {
+  const now = $('.pa-now', root), prev = $('.pa-prev', root);
+  return (html, tone = '') => { if (now.innerHTML) prev.innerHTML = now.innerHTML; now.innerHTML = html; now.className = 'pa-now ' + tone; };
+}
+function mkGuide(root, steps, onRestart) {
+  const box = $('.move', root); let i = 0, shown = '';
+  const show = () => {
+    const s = steps[i], cue = typeof s.cue === 'function' ? s.cue() : s.cue;
+    if (shown === i + '|' + cue) return; // unchanged: keep the cue pulse running
+    shown = i + '|' + cue;
+    $('.move-n', box).textContent = `${i + 1} / ${steps.length}`;
+    $('.move-text', box).innerHTML = s.text;
+    $$('.cue', root).forEach(e => e.classList.remove('cue'));
+    if (cue) $('#' + cue).classList.add('cue');
+  };
+  $('.move-restart', box).onclick = () => { i = 0; shown = ''; onRestart(); show(); };
+  return { ev(e) { if (steps[i].done(e) && i < steps.length - 1) i++; show(); }, reset() { i = 0; shown = ''; show(); } };
+}
+function mkRail(el) {
+  const lis = $$('li', el); let top = 0;
+  return {
+    hit(n, side) { lis[n - 1].classList.add('hit'); if (!side && n > top) { top = n; lis.forEach((l, i) => l.classList.toggle('now', i === n - 1)); } },
+    clear() { top = 0; lis.forEach(l => l.classList.remove('hit', 'now')); }
+  };
+}
+function onScreen(root) { const s = { v: true }; new IntersectionObserver(([e]) => { s.v = e.isIntersecting; }).observe(root); return s; }
+
+/* ---------- definitions strip ---------- */
+(() => {
+  const box = $('#def'), k = $('#def-k'), p = $('#def-p');
+  let opener = null;
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.term'); if (!b) return;
+    const src = $('#t-' + b.dataset.t); if (!src) return;
+    k.textContent = $('dt', src).textContent;
+    p.innerHTML = $('dd', src).innerHTML + ` <a href="#t-${b.dataset.t}">All terms</a>`;
+    box.hidden = false; opener = b;
+  });
+  const close = () => { box.hidden = true; opener?.focus(); opener = null; };
+  $('#def-x').onclick = close;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
+})();
+
+/* ---------- hero board + clock + nav ---------- */
+(() => {
+  const host = $('#hero-rows');
+  const data = [['1', 'SYN FLOOD', '3-WAY HANDSHAKE', '44-46', '#syn', 'Platform 1: TCP SYN flood'], ['2', 'MIRAI + DGA', 'DEFAULT PASSWORDS', '51-52', '#mirai', 'Platform 2: Mirai botnet and DGA'], ['3', 'TCP HIJACK', 'SEQ/ACK TRUST', '63-66', '#hijack', 'Platform 3: TCP session hijacking']];
+  data.forEach((d, r) => {
+    const a = document.createElement('a'); a.className = 'row ok'; a.href = d[4]; a.setAttribute('aria-label', d[5]);
+    const cells = [mkCell(1), mkCell(11), mkCell(17, 'hide-s'), mkCell(5, 'hide-s'), mkCell(5, 'c-state')];
+    cells.forEach(c => a.append(c)); host.append(a);
+    [d[0], d[1], d[2], d[3], 'READY'].forEach((txt, i) => setCell(cells[i], txt, { spin: true, delay: 250 + r * 220 + i * 90 }));
+  });
+  const clock = mkCell(5);
+  $('#clock').append(clock);
+  const tick = () => { const n = new Date(); setCell(clock, pad(n.getHours(), 2) + ':' + pad(n.getMinutes(), 2)); };
+  tick(); setInterval(tick, 5000);
+  const links = $$('.bar li a');
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
+  $$('main section[id]').forEach(s => io.observe(s));
+})();
+
+/* =================== MODEL 1: SYN FLOOD =================== */
+(() => {
+  const root = $('#sim-syn'), svg = $('.lines', root), P = id => $('#' + id, svg);
+  const pa = mkPA(root), rail = mkRail($('.rail', root)), view = onScreen(root);
+  const ui = Object.fromEntries(['real', 'spoof', 'flood', 'rate', 'backlog', 'retries', 'cookies', 'reset'].map(k => [k, $('#syn-' + k)]));
+  const rowsEl = $('#syn-rows'), fill = mkCell(5), lamp = $('#syn-lamp');
+  $('#syn-fill').append(fill);
+  const inc = mkRow([[2, 'hide-s'], [15, 'c-ip'], [8, 'c-state'], [3]]); $('#syn-in').replaceWith(inc.el);
+  setCell(inc.cells[0], 'IN');
+  const foot = $('#syn-foot');
+  const fc = {}; [['served', 'Served', 3], ['refused', 'Refused', 3], ['dropped', 'SYNs dropped', 4], ['net', 'netstat SYN_RECV', 3]].forEach(([k, l, w]) => { const s = document.createElement('span'); s.textContent = l; fc[k] = mkCell(w); s.append(fc[k]); foot.append(s); });
+  let S = { gen: 0 }, rows = [];
+  const hold = () => 2 ** (S.retries + 1) - 1; // Linux: 1+2+4+... seconds of SYN/ACK retries, then give up
+  const hx = n => '0x' + (n >>> 0).toString(16).toUpperCase().padStart(8, '0');
+
+  function buildRows() {
+    rowsEl.innerHTML = '';
+    rows = S.q.map(() => { const r = mkRow([[2, 'hide-s'], [15, 'c-ip'], [8, 'c-state'], [3]]); rowsEl.append(r.el); return r; });
+  }
+  function render() {
+    S.q.forEach((s, i) => {
+      const r = rows[i];
+      r.el.className = 'row' + (s ? (s.state === 'ESTAB' ? ' ok' : ' warn') + (s.kind === 'real' ? ' real' : '') : '');
+      setCell(r.cells[0], pad(i + 1, 2));
+      setCell(r.cells[1], s ? s.ip : '');
+      setCell(r.cells[2], s ? s.state : '');
+      setCell(r.cells[3], s && s.kind === 'fake' ? hold() - s.age : '', { right: true });
+    });
+    const used = S.q.filter(Boolean).length, n = S.q.length;
+    setCell(fill, used === n ? 'FULL' : `${used}/${n}`, { right: true });
+    lamp.className = 'lamp ' + (used === n ? 'bad blink' : used ? 'warn' : 'ok');
+    setCell(fc.served, pad(S.served, 3)); setCell(fc.refused, pad(S.refused, 3)); setCell(fc.dropped, pad(Math.min(S.dropped, 9999), 4));
+    setCell(fc.net, S.q.filter(s => s && s.state === 'SYN_RECV').length, { right: true });
+  }
+  function incoming(ip, verdict, real) {
+    if (!real && performance.now() < S.inHold) return;
+    if (real) S.inHold = performance.now() + 2200;
+    inc.el.className = 'row' + (verdict === 'DROPPED' ? ' refused' : verdict === 'COOKIE' ? ' ok' : ' warn') + (real ? ' real' : '');
+    setCell(inc.cells[1], ip); setCell(inc.cells[2], verdict);
+  }
+  function sysctl() {
+    $('#syn-rate-o').textContent = `${S.rate} SYN/s`;
+    $('#syn-backlog-o').textContent = `${S.q.length} slots`;
+    $('#syn-retries-o').textContent = `${S.retries}, holds ${hold()} s`;
+    $('#syn-sysctl').innerHTML =
+`<span class="c"># Linux settings behind these controls (slide 46)</span>
+net.ipv4.tcp_max_syn_backlog = <span class="v">${S.q.length}</span>  <span class="c"># real: 128 and up</span>
+net.ipv4.tcp_synack_retries  = <span class="v">${S.retries}</span>  <span class="c"># gives up after ${hold()} s</span>
+net.ipv4.tcp_syncookies      = <span class="v">${S.cookies ? 1 : 0}</span>  <span class="c"># Linux default is 1</span>`;
+  }
+  function checkFull() {
+    const used = S.q.filter(Boolean).length;
+    if (used === S.q.length && !S.full) {
+      S.full = true; rail.hit(3);
+      pa(`<b>Queue full: ${used} of ${used} slots</b> hold half-open connections. From now on every new SYN is dropped, real or fake.`, 'bad');
+      G.ev('full');
+    } else if (used < S.q.length - 1) S.full = false;
+  }
+  function fakeIp() { return '203.0.113.' + (1 + Math.random() * 254 | 0); }
+  async function arriveFake(visual, manual) {
+    const ip = fakeIp(), g = S.gen;
+    if (manual) await travel(svg, P('p-atk'), { color: 'var(--attack)', label: 'SYN', dur: 800 });
+    else if (visual) travel(svg, P('p-atk'), { color: 'var(--attack)', dur: 520 });
+    if (g !== S.gen) return;
+    rail.hit(1);
+    const i = S.q.indexOf(null);
+    if (i >= 0) {
+      S.q[i] = { kind: 'fake', ip, state: 'SYN_RECV', age: 0 };
+      rail.hit(2); incoming(ip, 'QUEUED');
+      const f = P('p-f' + (1 + Math.random() * 3 | 0));
+      if (manual) {
+        render();
+        pa(`A SYN arrived claiming to be from <b>${ip}</b>. The server reserved slot ${i + 1} and sent its SYN/ACK there.`);
+        await travel(svg, f, { color: 'var(--c2)', label: 'SYN/ACK', fade: true, dur: 900 });
+        if (g !== S.gen) return;
+        pa(`Nobody lives at ${ip}, so neither an ACK nor an RST comes back. Slot ${i + 1} stays <b>SYN_RECV</b> while the server retries for ${hold()} s. Watch its Hold count down.`);
+      } else if (visual) setTimeout(() => travel(svg, f, { color: 'var(--c2)', fade: true, dur: 700 }), 520);
+      G.ev('fake');
+    } else if (S.cookies) {
+      S.cookiesSent++; incoming(ip, 'COOKIE');
+      if (manual) pa('Queue full, so this spoofed SYN got a cookie instead of a slot. The cookie goes to an offline address and costs the server no memory.', 'ok');
+    } else {
+      S.dropped++; incoming(ip, 'DROPPED');
+      if (manual) pa('Queue full, so this spoofed SYN was simply dropped. The attacker loses nothing, because the queue is already blocked.', 'bad');
+    }
+    checkFull(); render();
+  }
+  function cookie(ip) { const t = (S.t >> 6) & 31, mss = 3, h = fnv(`${ip}:51514>192.0.2.80:80|${t}|secret`) & 0xFFFFFF; return ((t << 27) | (mss << 24) | h) >>> 0; }
+  async function realUser() {
+    if (S.userBusy) return;
+    S.userBusy = true; ui.real.disabled = true;
+    const ip = '192.0.2.23', g = S.gen;
+    const done = () => { if (g === S.gen) { S.userBusy = false; ui.real.disabled = false; } };
+    await travel(svg, P('p-user'), { label: 'SYN seq=100', dur: 850 });
+    if (g !== S.gen) return;
+    const i = S.q.indexOf(null);
+    if (i >= 0) {
+      S.q[i] = { kind: 'real', ip, state: 'SYN_RECV' }; incoming(ip, 'QUEUED', true); render();
+      pa(`Your SYN arrived. The server reserved <b>slot ${i + 1}</b> (memory for a TCB) and marked it SYN_RECV. It has not checked who you are yet.`);
+      await travel(svg, P('p-user'), { from: 1, to: 0, color: 'var(--c2)', label: 'SYN/ACK seq=300 ack=101', dur: 900 });
+      if (g !== S.gen) return;
+      await travel(svg, P('p-user'), { label: 'ACK seq=101 ack=301', dur: 900 });
+      if (g !== S.gen) return;
+      S.q[i].state = 'ESTAB'; render();
+      pa(`Your ACK completed the handshake. Slot ${i + 1} is <b>ESTABLISHED</b>, so the connection moves on to the web server and the slot is freed.`, 'ok');
+      await sleep(1200);
+      if (g !== S.gen) return;
+      S.q[i] = null; S.served++; render(); G.ev('served');
+    } else if (S.cookies) {
+      const ck = cookie(ip); incoming(ip, 'COOKIE', true);
+      pa(`Queue full, so the server answers with a <b>SYN cookie</b> instead of a slot. seq=${hx(ck)} packs a time counter, your MSS and a keyed hash of both addresses and ports. Nothing is stored.`, 'ok');
+      await travel(svg, P('p-user'), { from: 1, to: 0, color: 'var(--ok)', label: `SYN/ACK seq=${hx(ck)}`, dur: 1000 });
+      if (g !== S.gen) return;
+      await travel(svg, P('p-user'), { label: `ACK ack=${hx(ck + 1)}`, dur: 1000 });
+      if (g !== S.gen) return;
+      pa(`Your ACK came back with ack=${hx(ck + 1)}. The server subtracts 1, recomputes the hash and it matches, so it builds the connection now. <b>Served without a queue slot.</b>`, 'ok');
+      S.served++; render(); G.ev('served-cookie');
+    } else {
+      S.refused++; incoming(ip, 'DROPPED', true); rail.hit(4); render();
+      pa('<b>Your SYN was dropped</b>: no free slot. Your browser will retry a few times, then show "connection timed out". That is the denial of service.', 'bad');
+      G.ev('refused');
+    }
+    done();
+  }
+  function tick() {
+    if (!view.v) return;
+    S.t++;
+    const H = hold();
+    S.q.forEach((s, i) => {
+      if (!s || s.kind !== 'fake') return;
+      s.age++;
+      if (s.age >= H) {
+        S.q[i] = null;
+        if (!S.saidTimeout) { S.saidTimeout = true; pa(`Slot ${i + 1} gave up on ${s.ip} after ${H} s of retries and was freed.${S.flooding ? ' The flood refills it straight away.' : ''}`); }
+      } else if (s.age && ((s.age + 1) & s.age) === 0 && Math.random() < .5) travel(svg, P('p-f' + (1 + Math.random() * 3 | 0)), { color: 'var(--c2)', fade: true, dur: 700 });
+    });
+    if (S.flooding) { S.acc += S.rate; const n = Math.floor(S.acc); S.acc -= n; for (let k = 0; k < n; k++) arriveFake(k < 2, false); }
+    checkFull(); render();
+  }
+  function setFlood(on) { S.flooding = on; ui.flood.textContent = on ? 'Stop flood' : 'Start flood'; ui.flood.setAttribute('aria-pressed', on); }
+  function setCookies(on) { S.cookies = on; ui.cookies.setAttribute('aria-checked', on); $('.sw-t', ui.cookies).textContent = on ? 'On' : 'Off'; $('.lamp', ui.cookies).className = 'lamp' + (on ? ' ok' : ''); }
+  function reset() {
+    S = { gen: S.gen + 1, q: Array(+ui.backlog.value).fill(null), retries: +ui.retries.value, rate: +ui.rate.value, cookies: false, flooding: false, served: 0, refused: 0, dropped: 0, cookiesSent: 0, t: 0, acc: 0, inHold: 0 };
+    setFlood(false); setCookies(false); ui.real.disabled = false;
+    $$('.pkt', svg).forEach(p => p.remove());
+    buildRows(); rail.clear(); sysctl();
+    $('.pa-prev', root).innerHTML = '';
+    pa('Server idle: the SYN queue is empty. Follow <b>Your move</b> to start.');
+    incoming('', ''); inc.el.className = 'row'; render();
+  }
+  const G = mkGuide(root, [
+    { text: 'Press <b>Connect as a real user</b>. Watch the three packets travel. A row appears on the board at packet 2, before the server knows who you are.', cue: 'syn-real', done: e => e === 'served' },
+    { text: 'Press <b>Send 1 spoofed SYN</b>. Its reply goes to an address that does not exist, so that row just waits.', cue: 'syn-spoof', done: e => e === 'fake' },
+    { text: 'Press <b>Start flood</b> and watch the board fill until it says FULL.', cue: 'syn-flood', done: e => e === 'full' },
+    { text: 'With the flood still running, press <b>Connect as a real user</b> again.', cue: () => S.flooding ? 'syn-real' : 'syn-flood', done: e => e === 'refused' },
+    { text: 'Keep the flood running. Switch <b>SYN cookies</b> on, then connect as a real user once more.', cue: () => !S.cookies ? 'syn-cookies' : !S.flooding ? 'syn-flood' : 'syn-real', done: e => e === 'served-cookie' },
+    { text: 'Free play. Turn cookies off and compare queue size 16 with 4, and retries 5 with 2, at 1 SYN/s and at 20 SYN/s. Fewer retries only help against a slow flood.', cue: null, done: () => false }
+  ], reset);
+  ui.real.onclick = realUser;
+  ui.spoof.onclick = () => arriveFake(true, true);
+  ui.flood.onclick = () => {
+    setFlood(!S.flooding);
+    pa(S.flooding ? `Flood started: <b>${S.rate} spoofed SYNs per second</b>, each from a different fake address.` : 'Flood stopped. The rows already held stay until their retries run out.', S.flooding ? 'bad' : '');
+    G.ev(S.flooding ? 'flood' : 'flood-off');
+  };
+  ui.cookies.onclick = () => {
+    setCookies(!S.cookies); sysctl();
+    pa(S.cookies ? '<b>SYN cookies on</b> (tcp_syncookies=1). As on Linux, the server keeps using the queue normally and switches to cookies only when it is full.' : 'SYN cookies off. A full queue now means new SYNs are dropped.', S.cookies ? 'ok' : '');
+    G.ev('cookies');
+  };
+  ui.rate.oninput = () => { S.rate = +ui.rate.value; sysctl(); };
+  ui.retries.oninput = () => { S.retries = +ui.retries.value; sysctl(); render(); };
+  ui.backlog.oninput = () => { const n = +ui.backlog.value; S.q = Array.from({ length: n }, (_, i) => S.q[i] || null); S.full = false; buildRows(); sysctl(); checkFull(); render(); };
+  ui.reset.onclick = () => { reset(); G.reset(); };
+  reset(); G.reset();
+  setInterval(tick, 200); // one simulated second every 200 ms (5x)
+})();
+
+/* =================== MODEL 2: MIRAI LOOP =================== */
+(() => {
+  const root = $('#sim-mirai'), svg = $('.loop', root), path = $('#loop-path', svg), train = $('#loop-train', svg), mid = $('#loop-mid', svg);
+  const pa = mkPA(root), view = onScreen(root), grid = $('#mi-grid');
+  const ui = Object.fromEntries(['next', 'auto', 'reboot', 'pw', 'weak', 'reset'].map(k => [k, $('#mi-' + k)]));
+  const stns = $$('.stops circle', svg);
+  const STOPS = [[150, 60], [300, 60], [450, 60], [450, 240], [300, 240], [150, 240]];
+  const total = path.getTotalLength();
+  const L = STOPS.map(([x, y]) => { let best = 0, bd = 1e9; for (let l = 0; l <= total; l += 2) { const p = path.getPointAtLength(l), d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd) { bd = d; best = l; } } return best; });
+  const DICT = ['admin/admin', 'root/root', 'root/12345', 'admin/1234', 'user/user', 'support/support', 'root/default', 'admin/password', 'guest/guest', 'root/admin', 'service/service', 'root/888888', 'admin/(none)', 'root/(none)'];
+  const logRows = Array.from({ length: 5 }, () => { const r = mkRow([[14, 'c-ip'], [16, 'c-state']]); $('#mi-rows').append(r.el); return r; });
+  const foot = $('#mi-foot'), fc = {};
+  [['bots', 'Bots', 5], ['weak', 'Default pw', 2], ['strong', 'Own pw', 2], ['round', 'Round', 3]].forEach(([k, l, w]) => { const s = document.createElement('span'); s.textContent = l; fc[k] = mkCell(w); s.append(fc[k]); foot.append(s); });
+  let D = [], log = [], walk = null, rounds = 0, auto = null, afterReboot = false, busy = false, pos = L[0], gen = 0;
+
+  const ipOf = d => '198.51.100.' + d.ip;
+  function addLog(d, ev, tone = '') { log.unshift([d ? ipOf(d) : '', ev, tone]); log.length = Math.min(log.length, 5); }
+  function render() {
+    grid.innerHTML = '';
+    D.forEach(d => {
+      const e = document.createElement('div');
+      e.className = 'dev ' + (d.bot ? 'bot' : d.weak ? 'weak' : 'strong') + (walk && walk.target === d && walk.stop < 5 && !walk.fail ? ' scan' : '') + (d.flash ? ' flash' : '');
+      e.innerHTML = `<span class="ty">${d.type}</span><span>.${d.ip}</span><span class="pw"><svg aria-hidden="true"><use href="#i-${d.weak ? 'unlock' : 'lock'}"/></svg>${d.bot ? 'bot' : d.weak ? 'default' : 'own pw'}</span>`;
+      e.setAttribute('aria-label', `${d.type} ${ipOf(d)}: ${d.bot ? 'infected' : 'clean'}, ${d.weak ? 'default password' : 'own password'}`);
+      grid.append(e); d.flash = false;
+    });
+    logRows.forEach((r, i) => { const l = log[i] || ['', '', '']; r.el.className = 'row ' + l[2]; setCell(r.cells[0], l[0]); setCell(r.cells[1], l[1]); });
+    const bots = D.filter(d => d.bot).length;
+    setCell(fc.bots, `${pad(bots, 2)}/24`); setCell(fc.weak, pad(D.filter(d => d.weak).length, 2)); setCell(fc.strong, pad(D.filter(d => !d.weak).length, 2)); setCell(fc.round, pad(rounds, 3));
+    $('#mi-lamp').className = 'lamp ' + (bots > 12 ? 'bad' : bots ? 'warn' : 'ok');
+    $('#mi-weak-o').textContent = ui.weak.value + '%';
+    stns.forEach((s, i) => { s.classList.toggle('on', !!walk && walk.stop === i); s.classList.toggle('done', !!walk && !walk.fail && i < walk.stop); });
+    mid.textContent = walk ? `${walk.tag}  to  .${walk.target.ip}` : 'Press Next stop';
+  }
+  function moveTo(i) {
+    const a = pos; let b = L[i]; if (b < a) b += total; pos = L[i];
+    if (RM.matches) { const p = path.getPointAtLength(pos); train.setAttribute('cx', p.x); train.setAttribute('cy', p.y); return; }
+    const t0 = performance.now(), dur = 450 + (b - a) * .4;
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - (1 - k) ** 3, p = path.getPointAtLength((a + (b - a) * e) % total); train.setAttribute('cx', p.x); train.setAttribute('cy', p.y); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  async function nextStop() {
+    if (busy) return;
+    busy = true; const g = gen;
+    if (!walk || walk.stop >= 5 || walk.fail) {
+      const bots = D.filter(d => d.bot), targets = D.filter(d => !d.bot);
+      if (!targets.length) { pa('Every device in the neighborhood is already a bot. Try Reboot all, or Reset.'); busy = false; return; }
+      const b = bots[Math.random() * bots.length | 0];
+      walk = { stop: -1, who: b ? `Bot .${b.ip}` : 'A bot elsewhere on the internet', tag: b ? '.' + b.ip : 'internet', target: targets[Math.random() * targets.length | 0] };
+    }
+    walk.stop++;
+    const t = walk.target, s = walk.stop;
+    moveTo(s);
+    if (s === 0) {
+      addLog(t, 'PROBE TCP/23');
+      pa(`<b>Stop 1, Scan.</b> ${walk.who} sends a SYN probe to ${ipOf(t)} on Telnet port 23. Mirai's probes use the target's IP as their sequence number, which is how researchers spotted them <a class="cite" href="#src-mirai">§3.1</a>.`);
+    } else if (s === 1) {
+      const tries = [...DICT].sort(() => Math.random() - .5).slice(0, 10).filter(c => c !== t.cred);
+      let hit = -1;
+      if (t.weak && Math.random() < .8) { hit = Math.random() * 10 | 0; tries.splice(hit, 0, t.cred); }
+      const list = tries.slice(0, hit >= 0 ? hit + 1 : 10);
+      render();
+      for (const c of list) { if (g !== gen) return; addLog(t, c.replace('(none)', '-')); render(); await sleep(RM.matches ? 0 : 230); }
+      if (hit >= 0) {
+        walk.cred = t.cred; addLog(t, 'LOGIN OK', 'bad');
+        pa(`<b>Stop 2, Brute-force.</b> Guess ${hit + 1} worked: <b>${t.cred}</b>, a factory default. Each attempt uses 10 pairs picked at random from Mirai's list of 62 <a class="cite" href="#src-mirai">§2</a>.`, 'bad');
+      } else {
+        walk.fail = true; addLog(t, 'LOGIN FAILED', 'ok');
+        pa(`<b>Stop 2, Brute-force.</b> All 10 guesses failed${t.weak ? ': the right pair was not among the 10 it drew this time' : ': this owner set their own password'}. The bot moves on. Press Next stop to scan a new address.`, 'ok');
+      }
+    } else if (s === 2) {
+      addLog(t, 'REPORTED');
+      pa(`<b>Stop 3, Report.</b> The bot does not infect the device itself. It sends ${ipOf(t)}, port 23 and ${walk.cred} to a hardcoded report server.`);
+    } else if (s === 3) {
+      const arch = ['ARM7', 'MIPS', 'ARM', 'MIPSEL'][Math.random() * 4 | 0];
+      addLog(t, 'LOADER ' + arch);
+      pa(`<b>Stop 4, Load.</b> A separate loader logs in with those credentials, checks the processor (${arch}) and downloads the Mirai build compiled for it.`);
+    } else if (s === 4) {
+      t.bot = true; t.flash = true; addLog(t, 'LOCKED IN', 'bad');
+      pa('<b>Stop 5, Lock in.</b> The malware deletes its own file, renames its process to random letters, and kills anything on TCP 22 and 23 plus rival malware. It lives only in RAM, so a reboot removes it.', 'bad');
+    } else {
+      addLog(t, 'BOT ONLINE', 'bad');
+      pa(`<b>Stop 6, Await orders.</b> .${t.ip} connects to the C2 server and waits for attack orders: UDP, SYN, ACK or HTTP floods. It starts scanning too. Back to stop 1, now with ${D.filter(d => d.bot).length} bots.`, 'bad');
+      G.ev('walked');
+    }
+    render(); busy = false;
+  }
+  function round() {
+    if (!view.v) return;
+    rounds++;
+    const shooters = D.filter(d => d.bot).length + 1; // +1: bots elsewhere on the internet keep scanning
+    let fresh = 0;
+    for (let k = 0; k < shooters * 2; k++) {
+      const t = D[Math.random() * D.length | 0];
+      if (t.bot || !t.weak || Math.random() > .75) continue;
+      t.bot = true; t.flash = true; fresh++; addLog(t, 'INFECTED', 'bad');
+    }
+    if (fresh && afterReboot) { afterReboot = false; pa('<b>Reinfected.</b> The passwords were still factory defaults, so the next scan walked straight back in. CISA warned of exactly this <a class="cite" href="#src-cisa">TA16-288A</a>.', 'bad'); G.ev('reinfected'); }
+    const weak = D.filter(d => d.weak).length;
+    if (weak && D.filter(d => d.bot).length >= weak / 2) G.ev('half');
+    render();
+  }
+  function setAuto(on) {
+    clearInterval(auto); auto = on ? setInterval(round, 750) : null;
+    ui.auto.textContent = on ? 'Stop auto-spread' : 'Auto-spread'; ui.auto.setAttribute('aria-pressed', on);
+  }
+  function build() {
+    gen++; walk = null; rounds = 0; log = []; afterReboot = false; busy = false;
+    const k = Math.round(24 * ui.weak.value / 100);
+    const order = Array.from({ length: 24 }, (_, i) => i).sort(() => Math.random() - .5);
+    D = Array.from({ length: 24 }, (_, i) => ({ ip: 10 + i, type: ['CAM', 'DVR', 'RTR'][Math.random() * 3 | 0], weak: false, bot: false, cred: DICT[Math.random() * 8 | 0] }));
+    order.slice(0, k).forEach(i => { D[i].weak = true; });
+    D[0].weak = true; D[0].bot = true;
+    pos = L[0]; const p = path.getPointAtLength(pos); train.setAttribute('cx', p.x); train.setAttribute('cy', p.y);
+    $('.pa-prev', root).innerHTML = '';
+    pa(`Device .10 is already a bot. ${D.filter(d => d.weak).length} of 24 devices still use a factory-default password.`);
+    render();
+  }
+  const G = mkGuide(root, [
+    { text: 'Press <b>Next stop</b> to ride one infection around the loop. It takes six presses. If the guess fails, the bot starts again at Scan.', cue: 'mi-next', done: e => e === 'walked' },
+    { text: 'Press <b>Auto-spread</b> and watch every bot scan at once.', cue: 'mi-auto', done: e => e === 'half' },
+    { text: 'Press <b>Reboot all devices</b>, then watch the next few rounds.', cue: () => !afterReboot ? 'mi-reboot' : auto ? null : 'mi-auto', done: e => e === 'reinfected' },
+    { text: 'Press <b>Change default passwords</b>, then <b>Reboot all devices</b>.', cue: () => D.some(d => d.weak) ? 'mi-pw' : 'mi-reboot', done: e => e === 'clean' },
+    { text: 'Free play. Reset, then move the slider to see how many default passwords Mirai needs to take over the neighborhood.', cue: null, done: () => false }
+  ], () => { setAuto(false); build(); });
+  ui.next.onclick = nextStop;
+  ui.auto.onclick = () => { setAuto(!auto); if (auto) pa('Auto-spread on: every bot, plus the rest of the internet, makes two login attempts per round.', 'bad'); };
+  ui.reboot.onclick = () => {
+    const had = D.filter(d => d.bot).length; D.forEach(d => { d.bot = false; }); walk = null;
+    const weak = D.filter(d => d.weak).length;
+    addLog(null, 'ALL REBOOTED', 'ok');
+    if (weak) { afterReboot = true; pa(`<b>Rebooted.</b> Mirai lived only in RAM, so all ${had} bots are clean${auto ? '' : '. Turn Auto-spread on to see what happens next'}. The passwords are still factory defaults.`, 'ok'); }
+    else { pa('<b>Rebooted with new passwords everywhere.</b> They stay clean this time, because no default password is left to guess.', 'ok'); G.ev('clean'); }
+    render(); G.ev('reboot');
+  };
+  ui.pw.onclick = () => {
+    D.forEach(d => { d.weak = false; }); addLog(null, 'PASSWORDS SET', 'ok');
+    pa(`<b>Owners set their own passwords.</b> ${D.some(d => d.bot) ? 'The infected devices stay infected until they reboot, because the malware already runs in memory and has closed Telnet.' : 'No device is infected.'}`, 'ok');
+    render(); G.ev('pw');
+  };
+  ui.weak.oninput = () => { setAuto(false); build(); };
+  ui.reset.onclick = () => { setAuto(false); build(); G.reset(); };
+  build(); G.reset();
+})();
+
+/* =================== MODEL 3: DGA =================== */
+(() => {
+  const root = $('#sim-dga'), pa = mkPA(root);
+  const ui = Object.fromEntries(['hard', 'dga', 'prev', 'next', 'down', 'sink', 'reset'].map(k => [k, $('#dga-' + k)]));
+  const HARD = 'c2.hardcoded.example', START = Date.UTC(2016, 11, 4), DAY = 864e5;
+  const rows = Array.from({ length: 6 }, () => { const r = mkRow([[20, 'c-ip'], [10, 'c-state']]); $('#dga-rows').append(r.el); return r; });
+  const dayCell = mkCell(10); $('#dga-day').append(dayCell);
+  const foot = $('#dga-foot'), fc = {};
+  [['bots', 'Bots reaching operator', 5], ['fail', 'Failed lookups per bot', 1]].forEach(([k, l, w]) => { const s = document.createElement('span'); s.textContent = l; fc[k] = mkCell(w); s.append(fc[k]); foot.append(s); });
+  let S;
+  const iso = t => new Date(t).toISOString().slice(0, 10);
+  function cands(t) { // teaching formula: same date + same seed gives the same list on every machine
+    const r = rng(fnv(iso(t) + '|0x90')), list = [];
+    for (let i = 0; i < 5; i++) { let n = ''; const len = 9 + (r() * 2 | 0); for (let j = 0; j < len; j++) n += 'abcdefghijklmnopqrstuvwxyz'[r() * 26 | 0]; list.push(n + ['.example', '.test', '.invalid'][r() * 3 | 0]); }
+    return { list, pick: r() * 5 | 0 };
+  }
+  function status() {
+    if (S.mode === 'hard') return { rows: [[HARD, S.hardDown ? 'TAKEN DOWN' : 'LIVE C2']], online: !S.hardDown, sink: false, fail: S.hardDown ? 1 : 0 };
+    const c = cands(S.t), sunk = S.sinkFrom !== null && S.t >= S.sinkFrom;
+    const rs = [[HARD, 'FAILED']];
+    c.list.forEach((d, i) => rs.push([d, sunk ? 'SINKHOLED' : i === c.pick ? (S.down.has(d) ? 'TAKEN DOWN' : 'LIVE C2') : 'NXDOMAIN']));
+    const liveAt = rs.findIndex(r => r[1] === 'LIVE C2' || r[1] === 'SINKHOLED');
+    return { rows: rs, online: !sunk && liveAt > 0, sink: sunk, fail: liveAt > 0 ? liveAt : 6, pick: c.list[c.pick] };
+  }
+  function render() {
+    const st = status();
+    rows.forEach((r, i) => {
+      const x = st.rows[i];
+      r.el.className = 'row ' + (!x ? '' : x[1] === 'LIVE C2' ? 'ok' : x[1] === 'NXDOMAIN' ? 'dim' : x[1] === 'SINKHOLED' ? 'sink' : 'refused');
+      setCell(r.cells[0], x ? x[0] : ''); setCell(r.cells[1], x ? x[1] : '');
+    });
+    setCell(dayCell, iso(S.t));
+    setCell(fc.bots, st.online ? '24/24' : '00/24'); setCell(fc.fail, Math.min(st.fail, 9));
+    ui.sink.disabled = S.mode === 'hard';
+    ui.hard.setAttribute('aria-pressed', S.mode === 'hard'); ui.dga.setAttribute('aria-pressed', S.mode === 'dga');
+    $('#dga-formula').innerHTML =
+`<span class="c"># ${S.mode === 'hard' ? 'Hardcoded: one name, compiled into every bot' : 'Run by every bot and by the operator, separately'}</span>
+seed    = <span class="v">0x90</span>         <span class="c"># shared secret baked into the malware</span>
+today   = <span class="v">${iso(S.t)}</span>
+domains = ${S.mode === 'hard' ? `<span class="v">"${HARD}"</span>  <span class="c"># same every day</span>` : `f(seed, today)  <span class="c"># same input, same 5 names</span>`}`;
+    return st;
+  }
+  function day(dir) {
+    const before = status(), wasDown = S.mode === 'hard' ? S.hardDown : S.down.has(before.pick);
+    S.t += dir * DAY; const st = render();
+    if (dir < 0) { pa(`Back to ${iso(S.t)}. The list for that date is the same as before, because the function always gives the same names for the same date.`); return; }
+    if (S.mode === 'hard') {
+      if (S.hardDown) { pa('New day, same name, because the address is compiled into the malware. <b>The bots stay cut off</b>, and the operator has no way left to reach them.', 'ok'); G.ev('hard-next-down'); }
+      else pa('New day, same name. One fixed domain is easy to pull out of the binary and block.');
+    } else if (st.sink) { pa('Every name on today\'s list already belongs to the defenders. <b>The bots connect to the sinkhole</b> instead of the operator, and each connection reveals an infected device.', 'ok'); G.ev('sink-hit'); }
+    else { pa(`New date, new list. The operator registered <b>${st.pick}</b> in advance and the bots find it after ${st.fail} failed lookups.${wasDown ? ' Yesterday\'s takedown no longer matters.' : ''}`, 'bad'); if (wasDown) G.ev('dga-back'); }
+  }
+  function reset() { S = { mode: 'hard', t: START, hardDown: false, down: new Set(), sinkFrom: null }; $('.pa-prev', root).innerHTML = ''; render(); pa('Hardcoded mode: every bot looks up the same C2 name, every day.'); }
+  const G = mkGuide(root, [
+    { text: 'You are in <b>Hardcoded C2</b> mode. Press <b>Take down domain</b>.', cue: 'dga-down', done: e => e === 'hard-down' },
+    { text: 'Press <b>Next day</b>.', cue: 'dga-next', done: e => e === 'hard-next-down' },
+    { text: 'Switch to <b>DGA</b>.', cue: 'dga-dga', done: e => e === 'mode-dga' },
+    { text: 'Press <b>Take down domain</b> to kill today\'s live name, then <b>Next day</b>.', cue: () => S.down.size ? 'dga-next' : 'dga-down', done: e => e === 'dga-back' },
+    { text: 'Press <b>Reverse the algorithm</b>, then <b>Next day</b>.', cue: () => S.sinkFrom !== null ? 'dga-next' : 'dga-sink', done: e => e === 'sink-hit' },
+    { text: 'Free play. Step through the days. The list changes every day, and only one name on it answers for the operator.', cue: null, done: () => false }
+  ], reset);
+  ui.hard.onclick = () => { S.mode = 'hard'; render(); pa(S.hardDown ? 'Hardcoded mode: the C2 name is still taken down.' : 'Hardcoded mode: every bot looks up the same C2 name, every day.'); G.ev('mode-hard'); };
+  ui.dga.onclick = () => { S.mode = 'dga'; const st = render(); pa(`<b>DGA mode</b>, the later variant. Its hardcoded C2 no longer resolves, so each bot computes today's 5 names and tries them in order. The operator ran the same function and registered <b>${st.pick}</b>.`, 'bad'); G.ev('mode-dga'); };
+  ui.prev.onclick = () => day(-1);
+  ui.next.onclick = () => day(1);
+  ui.down.onclick = () => {
+    if (S.mode === 'hard') { if (S.hardDown) return pa('That name is already taken down.'); S.hardDown = true; render(); pa(`Defenders seized <b>${HARD}</b>. Every bot asks for that one name, gets nothing back, and goes silent.`, 'ok'); G.ev('hard-down'); return; }
+    const st = status();
+    if (st.sink) return pa('Today\'s names are already in the sinkhole.');
+    if (S.down.has(st.pick)) return pa('Today\'s live name is already taken down. Try Next day.');
+    S.down.add(st.pick); render(); pa(`Defenders took down <b>${st.pick}</b>. Today the bots get only NXDOMAIN answers.`, 'ok'); G.ev('dga-down');
+  };
+  ui.sink.onclick = () => {
+    if (S.sinkFrom !== null) return pa('The defenders already hold every future name.');
+    S.sinkFrom = S.t + DAY; render();
+    pa('Researchers reversed the algorithm, so they can compute every future list. They register all of those names first and point them at a <b>sinkhole</b>, starting tomorrow.', 'ok'); G.ev('sink');
+  };
+  ui.reset.onclick = () => { reset(); G.reset(); };
+  reset(); G.reset();
+})();
+
+/* =================== MODEL 4: TCP HIJACK =================== */
+(() => {
+  const root = $('#sim-hj'), svg = $('.lines', root), line = $('#hj-line', svg);
+  const pa = mkPA(root), rail = mkRail($('.rail', root));
+  const ui = Object.fromEntries(['send', 'null', 'cmd', 'none', 'tls', 'ipsec', 'reset'].map(k => [k, $('#hj-' + k)]));
+  const C = {}; ['cn', 'ce', 'ac', 'as', 'se', 'sn'].forEach(k => { C[k] = mkCell(4); $('#hj-' + k).append(C[k]); });
+  const rows = Array.from({ length: 7 }, () => { const r = mkRow([[7], [4], [4], [8], [8, 'c-state']]); $('#hj-rows').append(r.el); return r; });
+  const sync = $('#hj-sync');
+  let S = { gen: 0, prot: 'none' }, log = [];
+
+  function addLog(pathTxt, seq, ack, what, res, tone) { log.unshift([pathTxt, pad(seq, 4), pad(ack, 4), what, res, tone]); log.length = Math.min(log.length, 7); renderLog(); }
+  function renderLog() { rows.forEach((r, i) => { const l = log[i]; r.el.className = 'row ' + (l ? l[5] : ''); [0, 1, 2, 3, 4].forEach(j => setCell(r.cells[j], l ? l[j] : '')); }); }
+  function render() {
+    setCell(C.cn, pad(S.cli.nxt, 4)); setCell(C.ce, pad(S.cli.exp, 4)); setCell(C.se, pad(S.srv.exp, 4)); setCell(C.sn, pad(S.srv.nxt, 4));
+    const hidden = S.prot === 'ipsec' && S.sniffed;
+    setCell(C.ac, hidden ? '????' : S.atk.cli == null ? '----' : pad(S.atk.cli, 4));
+    setCell(C.as, hidden ? '????' : S.atk.srv == null ? '----' : pad(S.atk.srv, 4));
+    const ok = S.cli.nxt === S.srv.exp;
+    sync.className = 'sync ' + (S.closed ? 'closed' : ok ? 'ok' : 'bad');
+    sync.innerHTML = S.closed ? `<span>The server closed the connection. Press Reset model to start a new one.</span><span class="st">Closed</span>`
+      : `<span>Client's next SEQ</span><span class="big">${S.cli.nxt}</span><span>${ok ? '=' : '&ne;'} server expects</span><span class="big">${S.srv.exp}</span><span class="st">${ok ? 'In sync' : 'Out of sync'}</span>`;
+    ui.none.setAttribute('aria-pressed', S.prot === 'none'); ui.tls.setAttribute('aria-pressed', S.prot === 'tls'); ui.ipsec.setAttribute('aria-pressed', S.prot === 'ipsec');
+  }
+  const go = (from, to, color, label, dur = 620) => travel(svg, line, { from, to, color, label, dur });
+  async function storm(g) {
+    rail.hit(4, true);
+    for (let k = 0; k < 3; k++) {
+      await go(1, 0, 'var(--c2)', 'ACK', 360); if (g !== S.gen) return;
+      addLog('SRV>CLI', S.srv.nxt, S.srv.exp, 'ACK', 'BAD ACK', 'bad');
+      await go(0, 1, 'var(--route)', 'ACK', 360); if (g !== S.gen) return;
+      addLog('CLI>SRV', S.cli.nxt, S.cli.exp, 'ACK', 'BAD SEQ', 'bad');
+    }
+    await go(1, .5, 'var(--c2)', 'ACK', 360); if (g !== S.gen) return;
+    addLog('SRV>CLI', S.srv.nxt, S.srv.exp, 'ACK', 'DROPPED', 'dim');
+    pa('<b>ACK storm.</b> The server\'s ACK names bytes the client never sent, so the client answers with its own ACK. That one has a SEQ the server rejects, so the server ACKs again, and so on. ACKs carry no data, so the attacker on the path drops one and the loop stops.', 'bad');
+  }
+  function busy(on) { S.busy = on; [ui.send, ui.null, ui.cmd].forEach(b => { b.disabled = on; }); }
+  async function clientSend() {
+    if (S.busy) return;
+    if (S.closed) return pa('This connection is closed. Press Reset model.', 'bad');
+    busy(true); const g = S.gen;
+    const seq = S.cli.nxt, ack = S.cli.exp;
+    if (S.cli.nxt === S.srv.exp) {
+      await go(0, .5, 'var(--route)', `seq=${seq}`); if (g !== S.gen) return;
+      S.sniffed = true;
+      if (S.prot !== 'ipsec') S.atk.cli = seq + 50;
+      await go(.5, 1, 'var(--route)', S.prot === 'none' ? '50 bytes' : 'encrypted'); if (g !== S.gen) return;
+      S.srv.exp = seq + 50; S.cli.nxt = seq + 50;
+      addLog('CLI>SRV', seq, ack, S.prot === 'none' ? 'DATA 50' : 'ENC 50', 'ACCEPT', 'ok'); render();
+      const s2 = S.srv.nxt, a2 = S.srv.exp;
+      await go(1, .5, 'var(--c2)', `seq=${s2}`); if (g !== S.gen) return;
+      if (S.prot !== 'ipsec') S.atk.srv = s2 + 80;
+      await go(.5, 0, 'var(--c2)', 'output'); if (g !== S.gen) return;
+      S.cli.exp = s2 + 80; S.srv.nxt = s2 + 80;
+      addLog('SRV>CLI', s2, a2, S.prot === 'none' ? 'OUT 80' : 'ENC 80', 'ACCEPT', 'ok');
+      rail.hit(1); render();
+      if (S.prot === 'none') pa(`<b>Phase 1, track and sniff.</b> The client sent 50 bytes and the server answered with 80. On the way, the attacker copied the numbers: the client's next SEQ is <b>${S.atk.cli}</b>, the server's is <b>${S.atk.srv}</b>.`);
+      else if (S.prot === 'tls') pa('TLS encrypts the 50 bytes, but the TCP header with its SEQ and ACK travels in the clear. <b>The attacker still copies the numbers.</b>');
+      else pa('With IPsec ESP the TCP header is encrypted too. The attacker sees only ESP packets: <b>no SEQ, no ACK, no data</b>.', 'ok');
+      G.ev('p1');
+    } else {
+      await go(0, 1, 'var(--route)', `seq=${seq}`); if (g !== S.gen) return;
+      addLog('CLI>SRV', seq, ack, 'DATA 50', 'REJECT', 'refused'); render();
+      pa(`The real client sent seq=${seq}, but the server expects ${S.srv.exp}. Those bytes look like an old duplicate, so the <b>server rejects them</b> and answers with an ACK. The real user is locked out of their own session.`, 'bad');
+      G.ev('rejected');
+      await storm(g); if (g !== S.gen) return;
+    }
+    busy(false);
+  }
+  function blocked() {
+    if (S.closed) { pa('This connection is closed. Press Reset model.', 'bad'); return true; }
+    if (S.prot === 'ipsec') { pa('Through ESP the attacker cannot read any SEQ or ACK number, and could not sign a forged packet even with a lucky guess: <b>ESP authentication fails and the packet is dropped</b> before TCP sees it.', 'ok'); G.ev('ipsec-blocked'); return true; }
+    if (S.atk.cli == null) { pa('The attacker does not know the numbers yet. Press <b>Client sends a command</b> first, so it can copy them.', 'bad'); return true; }
+    return false;
+  }
+  function tlsKill(seq, ack, what) {
+    S.closed = true; addLog('ATK>SRV', seq, ack, what, 'TLS FAIL', 'ok'); render();
+    pa('TCP accepted the bytes, because the numbers were right. But TLS checks every record, and the forged bytes <b>fail its integrity check</b>. The server sends an alert and closes the connection. The attacker can end the session but cannot send commands in it.', 'ok');
+    G.ev('tls-blocked');
+  }
+  async function inject(kind) {
+    if (S.busy || blocked()) return;
+    busy(true); const g = S.gen;
+    const seq = S.atk.cli, ack = S.atk.srv, len = kind === 'null' ? 200 : 18, what = kind === 'null' ? 'NULL 200' : 'CMD 18';
+    await go(.5, 1, 'var(--attack)', `seq=${seq} as client`); if (g !== S.gen) return;
+    if (S.prot === 'tls') { tlsKill(seq, ack, what); busy(false); return; }
+    const wasSync = S.cli.nxt === S.srv.exp;
+    S.srv.exp = seq + len; S.atk.cli = seq + len;
+    addLog('ATK>SRV', seq, ack, what, 'ACCEPT', 'bad'); render();
+    if (kind === 'null') {
+      rail.hit(2);
+      pa(`<b>Phase 2, desynchronize.</b> The attacker sent 200 bytes of null data (Telnet no-ops) with the client's address and the exact SEQ, ${seq}. The server accepted them and now expects <b>${S.srv.exp}</b>. The client still thinks its next byte is <b>${S.cli.nxt}</b>.`, 'bad');
+      G.ev('p2');
+      await storm(g); if (g !== S.gen) return;
+    } else {
+      rail.hit(3);
+      const s2 = S.srv.nxt;
+      await go(1, .5, 'var(--c2)', 'output'); if (g !== S.gen) return;
+      S.srv.nxt = s2 + 64; S.atk.srv = S.srv.nxt;
+      addLog('SRV>CLI', s2, S.srv.exp, 'OUT 64', 'TAKEN', 'bad'); render();
+      pa(`<b>Phase 3, inject.</b> The forged command carried seq=${seq}, exactly what the server expected, so it ran it. The reply was addressed to the client, but the attacker on the path kept it. <b>Session hijacked.</b>${wasSync ? ' This worked without phase 2, and the injection itself pushed the server ahead of the client.' : ' The real client is still locked out.'}`, 'bad');
+      G.ev('p3');
+    }
+    busy(false);
+  }
+  function reset(prot = S.prot) {
+    S = { gen: S.gen + 1, prot, cli: { nxt: 101, exp: 301 }, srv: { exp: 101, nxt: 301 }, atk: { cli: null, srv: null }, closed: false, sniffed: false, busy: false };
+    busy(false); rail.clear(); $$('.pkt', svg).forEach(p => p.remove());
+    log = [['CLI>SRV', '0101', '0301', 'ACK', 'ACCEPT', 'ok'], ['SRV>CLI', '0300', '0101', 'SYN/ACK', 'ACCEPT', 'ok'], ['CLI>SRV', '0100', '0000', 'SYN', 'ACCEPT', 'ok']];
+    renderLog(); render();
+    $('.pa-prev', root).innerHTML = '';
+    pa(prot === 'none' ? 'Connection open over plain Telnet. Client and server agree on the numbers.' : prot === 'tls' ? '<b>TLS on.</b> The data inside TCP is now encrypted and every record carries an integrity check. Replay the steps.' : '<b>IPsec ESP on.</b> Whole IP payloads, TCP header included, are encrypted and authenticated. Replay the steps.', prot === 'none' ? '' : 'ok');
+  }
+  const G = mkGuide(root, [
+    { text: 'Press <b>Client sends a command</b>. As the packets pass, the attacker copies their SEQ and ACK numbers.', cue: 'hj-send', done: e => e === 'p1' },
+    { text: 'Press <b>Inject null data</b>. It is sent as if from the client, with the exact number the server expects.', cue: 'hj-null', done: e => e === 'p2' },
+    { text: 'Press <b>Client sends a command</b> again. Watch the server reject it.', cue: 'hj-send', done: e => e === 'rejected' },
+    { text: 'Press <b>Inject forged command</b>.', cue: 'hj-cmd', done: e => e === 'p3' },
+    { text: 'Set protection to <b>TLS</b>, then send a command and inject again.', cue: () => S.prot !== 'tls' ? 'hj-tls' : S.atk.cli == null ? 'hj-send' : 'hj-cmd', done: e => e === 'tls-blocked' },
+    { text: 'Now set <b>IPsec (ESP)</b>, send a command, then try to inject.', cue: () => S.prot !== 'ipsec' ? 'hj-ipsec' : S.sniffed ? 'hj-cmd' : 'hj-send', done: e => e === 'ipsec-blocked' },
+    { text: 'Free play. Reset with no protection and inject a forged command right after phase 1: it works without phase 2, and causes the desync itself.', cue: null, done: () => false }
+  ], () => reset('none'));
+  ui.send.onclick = clientSend;
+  ui.null.onclick = () => inject('null');
+  ui.cmd.onclick = () => inject('cmd');
+  ['none', 'tls', 'ipsec'].forEach(p => { ui[p].onclick = () => { reset(p); G.ev('prot-' + p); }; });
+  ui.reset.onclick = () => { reset(); G.ev('reset'); };
+  reset('none'); G.reset();
+})();
+</script>
+
+</body>
+</html>
