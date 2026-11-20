@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Network-Level Attacks Lab</title>
+<title>Network-Level Attacks Lab (Copy)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800;900&family=Overpass+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -269,7 +269,7 @@ footer p{max-width:80ch}
 .def .x{position:absolute;top:8px;right:8px;width:40px;height:40px;border:0;border-radius:6px;background:transparent;color:var(--pin);cursor:pointer;display:grid;place-items:center}
 .def .x:hover{background:#22252A}
 
-/* EHE additions */
+/* additions */
 .ln.c2{stroke:var(--c2)}
 .lines text.n{font:800 15px var(--font-data);fill:var(--ink);text-anchor:middle}
 .lines .stn.sm{stroke-width:3}
@@ -289,7 +289,6 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
   <div class="wide">
     <a class="bar-home" href="#top"><span class="code">M07</span><span class="bar-title">Network-level attacks</span></a>
     <ol>
-      <li><a href="#ehe">EHE map</a></li>
       <li><a href="#syn"><span class="pl">1</span><span class="lbl">SYN flood</span></a></li>
       <li><a href="#mirai"><span class="pl">2</span><span class="lbl">Mirai &amp; DGA</span></a></li>
       <li><a href="#hijack"><span class="pl">3</span><span class="lbl">Session hijack</span></a></li>
@@ -312,34 +311,11 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       <div class="row b-cols"><span style="--w:1">#</span><span style="--w:11">Attack</span><span class="hide-s" style="--w:17">What it abuses</span><span class="hide-s" style="--w:5">Slides</span><span style="--w:5">Model</span></div>
       <div id="hero-rows"></div>
     </div>
-    <p class="tip"><b>Kelompok 4's topics</b> from the Week 10 activity sheet: slide 9, <i>Mekanisme Serangan TCP SYN Flood</i> (platform 1); slide 16, <i>Siklus Infeksi &amp; DGA Botnet (Mirai Case)</i> (platform 2); slide 29, <i>Proses 3 Fase Pembajakan Sesi TCP</i> (platform 3). The sheet counts slides from the start of part 2, so these are numbered 45, 52 and 65 on the slides themselves, which is the numbering used below.</p>
     <p class="tip">Dotted words open a short definition with its source. The models run only inside this page: no real traffic, and every address and domain comes from ranges reserved for documentation.</p>
-    <p class="tip">Two sets of page numbers appear below. <b>Slide</b> numbers point to the lecture deck (Module 07, part 2). <b>EHE p.</b> numbers point to the EC-Council courseware, <i>EHE v2 Module 07: Network Level Attacks and Countermeasures</i> (61 pages). Text from the courseware is reworded, not quoted.</p>
   </div>
 </header>
 
 <main>
-<!-- ============ EHE MAP ============ -->
-<section class="platform" id="ehe" aria-labelledby="ehe-h">
-  <div class="wide">
-    <h2 id="ehe-h" style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900">Where the three attacks sit in EHE Module 07</h2>
-    <div class="col">
-      <p class="lead">The EC-Council courseware for Module 07 has three parts: sniffing, denial-of-service and session hijacking <a class="cite" href="#src-ehe">EHE p. 2</a>. The lecture deck follows the same order and adds detail of its own. This page takes one attack from the second part, the botnet behind that kind of attack, and one attack from the third part.</p>
-    </div>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE part</th><th scope="col">Pages</th><th scope="col">What the courseware covers</th><th scope="col">Where it appears on this page</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Sniffing</th><td>3 to 25</td><td>Packet sniffing, passive and active; MAC flooding, DHCP starvation, ARP spoofing, MAC spoofing, DNS poisoning; countermeasures and sniffer detection</td><td>Platform 3. Sniffing is phase 1 of the hijack, and ARP spoofing is one way an attacker gets on the path</td></tr>
-        <tr><th scope="row">Denial-of-service</th><td>26 to 42</td><td>DoS and DDoS, six attack techniques, countermeasures and protection tools</td><td>Platform 1 (SYN flood, p. 36) and platform 2 (the botnet behind a DDoS, p. 29 to 31)</td></tr>
-        <tr><th scope="row">Session hijacking</th><td>43 to 60</td><td>Definition, process, types, four methods, detection and countermeasures</td><td>Platform 3 (the hijacking process, p. 47)</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col">
-      <p class="note"><strong>What the courseware leaves out</strong>The EHE module does not mention Mirai, a DGA, SYN cookies or the ACK storm. It names session desynchronization as a step but does not explain how the sequence numbers are pushed apart. Those parts come from the lecture deck (slides 46, 52, 65 and 66) and from the papers and RFCs under Sources. Where the courseware and the other sources differ, a table below sets them side by side.</p>
-    </div>
-  </div>
-</section>
-
 <!-- ============ PLATFORM 1 ============ -->
 <section class="platform" id="syn" aria-labelledby="syn-h">
   <div class="wide">
@@ -350,7 +326,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     </div>
     <div class="col">
       <p class="lead">Every TCP connection opens with a <button type="button" class="term" data-t="handshake">3-way handshake</button>. The server sets aside memory for the connection, a <button type="button" class="term" data-t="tcb">TCB</button>, as soon as the first packet arrives, before it knows the sender is real. A SYN flood sends thousands of first packets from <button type="button" class="term" data-t="spoof">spoofed</button> addresses. Each leaves a <button type="button" class="term" data-t="halfopen">half-open</button> connection waiting for an answer that never comes, until the <button type="button" class="term" data-t="backlog">backlog</button> is full and real users are turned away.</p>
-      <p class="note"><strong>How EHE defines it</strong>A <button type="button" class="term" data-t="dos">denial-of-service</button> attack makes a computer or network partly or wholly unavailable to the people entitled to use it, by overloading it with requests or traffic that serve no real purpose <a class="cite" href="#src-ehe">EHE p. 28</a>. The SYN flood is the technique that does this through the TCP three-way handshake <a class="cite" href="#src-ehe">EHE p. 36</a>. The courseware's general picture of a DoS shows attack traffic using up all the bandwidth. A SYN flood needs far less: it aims at the queue of one listening port, not at the capacity of the network <a class="cite" href="#src-4987">RFC 4987 §1</a>.</p>
+      <p class="note"><strong>What kind of attack it is</strong>A SYN flood is a <button type="button" class="term" data-t="dos">denial-of-service</button> attack: it makes a computer or network partly or wholly unavailable to the people entitled to use it, by overloading it with requests or traffic that serve no real purpose <a class="cite" href="#src-m07">Module 07 p. 28</a>. The usual picture of a DoS is attack traffic using up all the bandwidth. A SYN flood needs far less, because it aims at the queue of one listening port, not at the capacity of the network <a class="cite" href="#src-4987">RFC 4987 §1</a>.</p>
     </div>
 
     <figure class="sim" id="sim-syn" aria-labelledby="syn-cap">
@@ -406,9 +382,9 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       </div>
     </figure>
 
-    <h3 class="h">EHE's five steps, the lecture's four stages, and the model</h3>
+    <h3 class="h">The attack step by step, and where the model shows it</h3>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE p. 36</th><th scope="col">Slide 45</th><th scope="col">Where you see it in Model 1</th></tr></thead>
+      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 36</a></th><th scope="col">Slide 45</th><th scope="col">Where you see it in Model 1</th></tr></thead>
       <tbody>
         <tr><th scope="row">1. The attack exploits the three-way handshake</th><td>The premise, on slide 44: memory is set aside before the handshake is complete</td><td class="where">Connect as a real user shows the handshake working normally</td></tr>
         <tr><th scope="row">2. The attacker sends a large number of fake SYN requests with spoofed source addresses</th><td>Stage 1, SYN spoofing</td><td class="where">Send 1 spoofed SYN and Start flood: red packets, each from a different 203.0.113.x address</td></tr>
@@ -417,7 +393,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">5. The server's resources are used up and it cannot process legitimate requests</th><td>Stage 4, denial of service</td><td class="where">Your own SYN is marked DROPPED and the Refused counter goes up</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>Same sequence, counted differently</strong>EHE counts the premise as its first step and separates the waiting from the piling up. The lecture starts at the first spoofed packet. Neither says why the server's reply goes unanswered. RFC 4987 does, and the note under the next table explains it.</p></div>
+    <div class="col"><p class="note"><strong>Four stages or five steps</strong>The slide starts counting at the first spoofed packet, so its four stages are steps 2 to 5 here. Why the server's reply goes unanswered is explained in the note under the next table.</p></div>
 
     <h3 class="h">Normal handshake vs SYN flood</h3>
     <div class="tbl"><table>
@@ -446,52 +422,21 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="col"><p class="note"><strong>Spotting it on a server</strong>Count half-open connections with <code>netstat -an | grep SYN_RECV | wc -l</code>; the model's board footer shows the same count. The slide treats more than 100 as an early sign of a SYN flood (slide 58). On Linux each SYN_RECV entry costs about 304 bytes of memory <a class="cite" href="#src-kernel">kernel docs</a>.</p>
       <p class="note"><strong>Finding who is sending</strong>Slide 58's second command counts connections per source address: <code>netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n</code>. Against a spoofed flood it finds nothing useful, because every SYN carries a different fake address, so each one appears once, as on the model's board. It helps against a botnet that floods from its real addresses, where a few sources show up hundreds of times.</p></div>
     <h3 class="h">DoS vs DDoS</h3>
-    <div class="col"><p>Model 1 is a DoS: one attacker against one server. When the same flood comes from a <button type="button" class="term" data-t="botnet">botnet</button> it is a <button type="button" class="term" data-t="ddos">DDoS</button>, which is where platform 2 picks up. EHE compares the two on seven points <a class="cite" href="#src-ehe">EHE p. 30</a>.</p></div>
+    <div class="col"><p>Model 1 is a DoS: one attacker against one server. When the same flood comes from a <button type="button" class="term" data-t="botnet">botnet</button> it is a <button type="button" class="term" data-t="ddos">DDoS</button>, which is where platform 2 picks up <a class="cite" href="#src-m07">Module 07 p. 30</a>.</p></div>
     <div class="tbl"><table>
       <thead><tr><th scope="col">Aspect</th><th scope="col">DoS</th><th scope="col">DDoS</th></tr></thead>
       <tbody>
         <tr><th scope="row">Scale</th><td>Small, usually one machine or service affected</td><td>Large, many machines or services affected</td></tr>
         <tr><th scope="row">Cost and resources</th><td>Low: one attacking system is enough</td><td>High: many systems are needed, such as a botnet</td></tr>
-        <tr><th scope="row">Target</th><td>A single device or network</td><td>Multiple devices or networks</td></tr>
         <tr><th scope="row">How it overloads</th><td>From one place</td><td>From several locations at once</td></tr>
         <tr><th scope="row">Mitigation</th><td>Easier, because there is one source to block</td><td>Harder, because the traffic comes from many sources</td></tr>
         <tr><th scope="row">Duration</th><td>Usually shorter</td><td>Can last longer</td></tr>
         <tr><th scope="row">Resources to prevent it</th><td>Fewer</td><td>Advanced infrastructure and specialized tools</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>Two rows to read with care</strong>The table gives a DDoS "multiple targets", while the courseware's own definition one page earlier says a DDoS overwhelms a single target from many compromised systems <a class="cite" href="#src-ehe">EHE p. 29</a>. What is multiple in every DDoS is the sources. The Dyn attack fits both readings: one DNS provider was hit, and many sites that depended on it went down <a class="cite" href="#src-mirai">Antonakakis §6.3</a>. The table also calls a DDoS high-cost. That describes the machines involved. For the person ordering one, EHE says DDoS-for-hire services make it inexpensive <a class="cite" href="#src-ehe">EHE p. 31</a>.</p></div>
-
-    <h3 class="h">The SYN flood next to EHE's other five techniques</h3>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">Technique</th><th scope="col">EHE</th><th scope="col">What the attacker sends</th><th scope="col">What runs out on the target</th><th scope="col">Layer</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">HTTP flood</th><td>p. 33</td><td>A large volume of HTTP requests that look like normal visits</td><td>The web server's and application's capacity to answer</td><td>7, application</td></tr>
-        <tr><th scope="row">UDP flood</th><td>p. 34</td><td>UDP packets from spoofed addresses to random ports</td><td>The server finds no application on those ports and answers each packet with ICMP Destination Unreachable, which uses up network resources and bandwidth</td><td>4, transport</td></tr>
-        <tr><th scope="row">ICMP flood (ping flood)</th><td>p. 35</td><td>ICMP echo requests at a high rate, from spoofed addresses</td><td>Resources and bandwidth spent on echo replies, until the target stops answering normal traffic</td><td>3, network</td></tr>
-        <tr class="mark"><th scope="row">SYN flood</th><td>p. 36</td><td>Fake SYNs from spoofed addresses, never followed by an ACK</td><td>Slots in the listening queue</td><td>4, transport</td></tr>
-        <tr><th scope="row">Fragmentation</th><td>p. 37</td><td>Many fragmented TCP or UDP packets (1500 bytes and more) at a high rate</td><td>CPU and memory spent putting the fragments back together</td><td>3, network</td></tr>
-        <tr><th scope="row">DNS amplification</th><td>p. 38</td><td>DNS requests to open resolvers, with a spoofed source address so the answers go to the victim</td><td>Bandwidth: the replies are much larger than the requests</td><td>7, carried over UDP</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col"><p class="note"><strong>What sets the SYN flood apart</strong>Four of the other five win by volume: they send more than the target or its link can carry or process. The SYN flood wins by holding state. Each SYN is a tiny packet, but it occupies a queue slot for as long as the server keeps retrying, about 63 s on Linux by default <a class="cite" href="#src-kernel">kernel docs</a>. That is why Model 1 fills up at only 5 SYNs per second, and why the lecture measures this kind of attack in packets per second, not gigabits (slide 55). EHE states the layer only for the HTTP flood; the other rows are placed by the protocol they use.</p></div>
-
-    <h3 class="h">EHE's DoS countermeasures, and which attack each one answers</h3>
-    <div class="col"><p>The courseware gives one list of eight countermeasures for all DoS and DDoS attacks <a class="cite" href="#src-ehe">EHE p. 41</a>. Sorted by what they actually stop, only two of them act on a SYN flood.</p></div>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE countermeasure</th><th scope="col">Answers</th><th scope="col">Why</th></tr></thead>
-      <tbody>
-        <tr class="mark"><th scope="row">Stop packets with forged source addresses at the ISP</th><td>SYN flood (platform 1)</td><td>This is the Filtering row in the table above: spoofed SYNs are dropped before they leave the attacker's network. A botnet that floods from its real addresses gets through <a class="cite" href="#src-4987">RFC 4987 §3.1</a></td></tr>
-        <tr class="mark"><th scope="row">Update the kernel to its latest release</th><td>SYN flood (platform 1)</td><td>The SYN queue and SYN cookies are part of the kernel's TCP code <a class="cite" href="#src-kernel">kernel docs</a></td></tr>
-        <tr><th scope="row">Keep software and protocols up to date, and scan machines for unusual behavior</th><td>Mirai (platform 2)</td><td>An infected device behaves unusually: it starts scanning TCP 23 and 2323 for new victims</td></tr>
-        <tr><th scope="row">Disable unused and insecure services</th><td>Mirai (platform 2)</td><td>Telnet is the service Mirai logs in through</td></tr>
-        <tr><th scope="row">Secure remote administration, for example with a VPN and multi-factor authentication</th><td>Mirai (platform 2)</td><td>Mirai's way in is remote administration guarded only by a factory password</td></tr>
-        <tr><th scope="row">Block inbound packets that come from service ports</th><td>Reflection attacks such as DNS amplification</td><td>Replies from reflectors arrive from a service port. A SYN flood uses no reflectors, so this does not touch it</td></tr>
-        <tr><th scope="row">Strong encryption on the network (WPA3, AES-256) against eavesdropping</th><td>Session hijacking (platform 3)</td><td>Eavesdropping is phase 1 of the hijack. Encryption does nothing against a flood of packets</td></tr>
-        <tr><th scope="row">Avoid unsafe functions such as <code>gets</code> and <code>strcpy</code></th><td>None of the three</td><td>These C functions cause buffer overflows, a different way to crash a service (slide 41 lists it under resource exhaustion)</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col"><p class="note"><strong>What the list is missing</strong>The courseware has no defense aimed at the SYN queue itself. SYN cookies, a bigger backlog and fewer retries come from slide 46 and RFC 4987, and they are the ones Model 1 lets you switch on.</p>
-      <p class="note"><strong>Protection tools the courseware names</strong>Anti DDoS Guardian, which protects web, game and mail servers, and the services from Imperva, Akamai, Radware (DefensePro), Cloudflare and F5 <a class="cite" href="#src-ehe">EHE p. 42</a>. They work like the "Firewall or proxy" row above: traffic passes through them first and only clean traffic reaches the server. The lecture calls the cloud version BGP Anycast scrubbing (slide 57).</p></div>
+    <div class="col"><p class="note"><strong>One attack, both forms</strong>The 2016 attack on Dyn was a DDoS that included SYN floods: the technique from this platform, sent by the botnet from the next one <a class="cite" href="#src-mirai">Antonakakis §6.3</a>.</p>
+      <p class="note"><strong>What sets the SYN flood apart</strong>UDP, ICMP and HTTP floods win by volume: they send more than the target or its link can carry or process <a class="cite" href="#src-m07">Module 07 p. 33 to 35</a>. The SYN flood wins by holding state. Each SYN is a tiny packet, but it occupies a queue slot for as long as the server keeps retrying, about 63 s on Linux by default <a class="cite" href="#src-kernel">kernel docs</a>. That is why Model 1 fills up at only 5 SYNs per second, and why the lecture measures this kind of attack in packets per second, not gigabits (slide 55).</p>
+      <p class="note"><strong>Defenses outside the server</strong>Two measures act before a spoofed SYN reaches the queue. Networks can stop packets with forged source addresses at the ISP level, which is the Filtering row above <a class="cite" href="#src-m07">Module 07 p. 41</a>. DDoS protection services such as Cloudflare, Akamai, Imperva, Radware DefensePro and F5 stand in front of the server and pass on only clean traffic, like the Firewall or proxy row <a class="cite" href="#src-m07">Module 07 p. 42</a>; the lecture calls the cloud version BGP Anycast scrubbing (slide 57). On the server itself, keep the kernel up to date <a class="cite" href="#src-m07">Module 07 p. 41</a>, because the SYN queue and SYN cookies are kernel code <a class="cite" href="#src-kernel">kernel docs</a>.</p></div>
   </div>
 </section>
 
@@ -509,10 +454,10 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       <p class="note"><strong>Two numbers that differ from slide 52</strong>The slide gives about 60 default logins and "millions" of devices. The Mirai source code holds 62 username and password pairs, and the measured peak was about 600,000 devices at once <a class="cite" href="#src-mirai">Antonakakis §2, §4.2</a>. The slide also describes DGAs that make thousands of names a day; that is true of DGAs in general, while the Mirai variant made one <a class="cite" href="#src-netlab">Netlab</a>.</p>
     </div>
 
-    <h3 class="h">How EHE draws a DDoS, and how Mirai fits it</h3>
+    <h3 class="h">The general shape of a DDoS botnet, and how Mirai fits it</h3>
     <div class="col">
-      <p>The courseware does not name Mirai. It describes any DDoS botnet with three roles and three steps <a class="cite" href="#src-ehe">EHE p. 29</a>.</p>
-      <svg class="lines" viewBox="0 0 600 262" role="img" aria-label="Diagram after EHE page 29: the attacker sets up a handler, the handler infects many machines, and those zombies attack the target server.">
+      <p>A DDoS botnet is usually described with three roles and three steps <a class="cite" href="#src-m07">Module 07 p. 29</a>.</p>
+      <svg class="lines" viewBox="0 0 600 262" role="img" aria-label="Diagram: the attacker sets up a handler, the handler infects many machines, and those zombies attack the target server.">
         <path class="ln ink" d="M40 131 H168"/>
         <path class="ln c2" d="M232 131 H282 L352 61 H374"/>
         <path class="ln c2" d="M232 131 H374"/>
@@ -541,7 +486,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       </ol>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE role</th><th scope="col">What it does in EHE</th><th scope="col">In Mirai</th></tr></thead>
+      <thead><tr><th scope="col">Role</th><th scope="col">In the general model</th><th scope="col">In Mirai</th></tr></thead>
       <tbody>
         <tr><th scope="row">Attacker</th><td>Sets up the handler</td><td>The operator, who runs the C2 and picks the targets</td></tr>
         <tr><th scope="row">Handler</th><td>Infects the machines, then gives them orders</td><td>Split into separate parts: the bots scan and report, a report server collects the logins, a loader installs the malware, and the C2 sends the attack orders <a class="cite" href="#src-mirai">Antonakakis §2</a></td></tr>
@@ -549,7 +494,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">Targeted server</th><td>Receives the combined traffic</td><td>Krebs on Security and Dyn, among others <a class="cite" href="#src-mirai">§6.3</a></td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>The difference that matters</strong>In EHE's picture the handler does the infecting. In Mirai the zombies find the next victims themselves, so every new bot is one more scanner <a class="cite" href="#src-mirai">Antonakakis §2</a>. Auto-spread in Model 2 shows the effect: the more bots there are, the faster the rest fall.</p></div>
+    <div class="col"><p class="note"><strong>The difference that matters</strong>In the general model the handler does the infecting. In Mirai the zombies find the next victims themselves, so every new bot is one more scanner <a class="cite" href="#src-mirai">Antonakakis §2</a>. Auto-spread in Model 2 shows the effect: the more bots there are, the faster the rest fall.</p></div>
 
     <figure class="sim" id="sim-mirai" aria-labelledby="mi-cap">
       <div class="sim-head">
@@ -665,9 +610,9 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     </table></div>
     <div class="col"><p class="note"><strong>Defense</strong>Changing default passwords and turning off Telnet stops the infection at the source. A reboot alone clears the malware from RAM, but an unchanged device is found and infected again <a class="cite" href="#src-cisa">CISA TA16-288A</a>. Against a DGA, flag machines with many NXDOMAIN answers and sinkhole the predicted names <a class="cite" href="#src-attack">ATT&amp;CK T1568.002</a>.</p>
       <p class="note"><strong>Spotting an infected device</strong>A bot scans for the next victim, so on your own network a camera or router that suddenly opens many outbound connections to TCP 23 and 2323 is probably infected <a class="cite" href="#src-mirai">Antonakakis §2</a>. Block outbound Telnet from IoT devices at the firewall, so an infected one cannot recruit others.</p></div>
-    <h3 class="h">Why a DDoS works: EHE's five reasons, with Mirai's numbers</h3>
+    <h3 class="h">Why a botnet DDoS works, with Mirai's numbers</h3>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE reason (p. 31)</th><th scope="col">What it looked like with Mirai</th></tr></thead>
+      <thead><tr><th scope="col">Reason <a class="cite" href="#src-m07">Module 07 p. 31</a></th><th scope="col">What it looked like with Mirai</th></tr></thead>
       <tbody>
         <tr><th scope="row">It overwhelms the target's resources, so legitimate traffic cannot be handled</th><td>623 Gbps aimed at the Krebs on Security blog on 21 Sep 2016 <a class="cite" href="#src-mirai">Antonakakis §6.3</a></td></tr>
         <tr><th scope="row">Many compromised systems multiply the impact</th><td>About 600,000 devices at the peak <a class="cite" href="#src-mirai">§4.2</a></td></tr>
@@ -676,20 +621,8 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">It causes downtime, financial loss and reputational damage</th><td>The attack on Dyn on 21 Oct 2016 disrupted Amazon, GitHub, Netflix, Twitter and others <a class="cite" href="#src-mirai">§6.3</a></td></tr>
       </tbody>
     </table></div>
-
-    <h3 class="h">What the bots send when the order comes</h3>
-    <div class="col"><p>Stop 6 of Model 2 ends with the bot waiting for attack orders. The Mirai paper lists ten attack types in the malware <a class="cite" href="#src-mirai">Antonakakis §6.1</a>. Set against the six techniques in the EHE courseware:</p></div>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE technique</th><th scope="col">EHE</th><th scope="col">Among Mirai's attack types?</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">HTTP flood</th><td>p. 33</td><td>Yes</td></tr>
-        <tr><th scope="row">UDP flood</th><td>p. 34</td><td>Yes</td></tr>
-        <tr class="mark"><th scope="row">SYN flood</th><td>p. 36</td><td>Yes, the attack from platform 1. Mirai also has ACK floods, which send the later packets of the handshake in bulk</td></tr>
-        <tr><th scope="row">DNS amplification</th><td>p. 38</td><td>Mostly no. Mirai has a DNS flood, but its bots sent traffic directly: only 2.8% of its attack commands used amplification</td></tr>
-        <tr><th scope="row">ICMP flood, fragmentation</th><td>p. 35, 37</td><td>Not among the ten the paper lists</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col"><p class="note"><strong>Where platforms 1 and 2 meet</strong>A SYN flood from one machine is a DoS, and filtering forged source addresses can blunt it. The same flood from hundreds of thousands of bots is a DDoS sent from real addresses, so that filter no longer helps <a class="cite" href="#src-4987">RFC 4987 §3.1</a>. This is the "harder to mitigate" row of EHE's DoS vs DDoS table in practice.</p></div>
+    <div class="col"><p class="note"><strong>When the order comes</strong>Stop 6 of Model 2 ends with the bot waiting for attack orders. Mirai carries ten attack types, among them HTTP, UDP, SYN and ACK floods. Its bots mostly sent traffic directly: only 2.8% of attack commands used amplification <a class="cite" href="#src-mirai">Antonakakis §6.1</a>.</p>
+      <p class="note"><strong>Where platforms 1 and 2 meet</strong>A SYN flood from one machine is a DoS, and filtering forged source addresses can blunt it. The same flood from hundreds of thousands of bots is a DDoS sent from real addresses, so that filter no longer helps <a class="cite" href="#src-4987">RFC 4987 §3.1</a>. This is the Mitigation row of the DoS vs DDoS table in practice.</p></div>
   </div>
 </section>
 
@@ -703,7 +636,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     </div>
     <div class="col">
       <p class="lead">Once a TCP connection is open, each end accepts any packet with the right addresses, ports and <button type="button" class="term" data-t="seqack">SEQ/ACK</button> numbers. Nothing else proves who sent it. An attacker <button type="button" class="term" data-t="onpath">on the path</button> between client and server can read those numbers, knock the two ends out of step, then speak to the server as the client <a class="cite" href="#src-joncheray">Joncheray 1995</a>.</p>
-      <p class="note"><strong>How EHE defines it</strong>Session hijacking is taking over an established, valid TCP session between a client and a server. By sniffing the traffic, or by stealing or guessing the <button type="button" class="term" data-t="sessid">session ID</button>, the attacker acts as the user who has already logged in. The attacker can also simply break the session, which is a denial of service <a class="cite" href="#src-ehe">EHE p. 45</a>. Model 4 shows both outcomes: with no protection the attacker issues a command as the client, and with TLS on the most it can do is make the server close the connection.</p>
+      <p class="note"><strong>What it is</strong>Session hijacking is taking over an established, valid TCP session between a client and a server. By sniffing the traffic and obtaining what identifies the session, the attacker acts as the user who has already logged in. The attacker can also simply break the session, which is a denial of service <a class="cite" href="#src-m07">Module 07 p. 45</a>. Model 4 shows both outcomes: with no protection the attacker issues a command as the client, and with TLS on the most it can do is make the server close the connection.</p>
     </div>
 
     <figure class="sim" id="sim-hj" aria-labelledby="hj-cap">
@@ -762,9 +695,9 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="col"><p class="note"><strong>Two ways to desynchronize</strong>The model injects harmless null data (Telnet no-ops) into an open session, so the server's count jumps ahead of the client's. The other way, early desync, strikes during setup: the attacker resets the half-built connection with an <button type="button" class="term" data-t="rst">RST</button> and opens a new one with a different starting number <a class="cite" href="#src-joncheray">Joncheray</a>. Either way the result is the same <button type="button" class="term" data-t="desync">desynchronized</button> state, and an <button type="button" class="term" data-t="ackstorm">ACK storm</button> follows.</p>
       <p class="note"><strong>Spotting it</strong>A network IDS sees what the packet log in the model shows: a sudden jump in a connection's sequence numbers (the "SEQ Jump" indicator on slide 80) and bursts of empty ACKs going back and forth between two hosts. The lab tool on slides 66 and 67, Hunt, does the same three phases on a real LAN: it lists active connections, resets or desynchronizes one, and injects into it.</p></div>
 
-    <h3 class="h">EHE's five steps, the lecture's three phases, and the model</h3>
+    <h3 class="h">Five steps, the lecture's three phases, and the model</h3>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE p. 47</th><th scope="col">What EHE says happens</th><th scope="col">Slide 65</th><th scope="col">Where you see it in Model 4</th></tr></thead>
+      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 47</a></th><th scope="col">What happens</th><th scope="col">Slide 65</th><th scope="col">Where you see it in Model 4</th></tr></thead>
       <tbody>
         <tr><th scope="row">1. Sniff</th><td>The attacker intercepts the traffic between the victim and the target</td><td>Phase 1, tracking and sniffing</td><td class="where">The attacker sits on the path, in the middle of the line diagram</td></tr>
         <tr><th scope="row">2. Monitor</th><td>The attacker watches the packets flow and predicts the sequence number</td><td>Phase 1</td><td class="where">Client sends a command: the Attacker's copy board fills in</td></tr>
@@ -773,13 +706,13 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">5. Command injection</th><td>The attacker starts injecting packets to the target server</td><td>Phase 3, command injection</td><td class="where">Inject forged command</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>Read or predict?</strong>EHE says the attacker predicts the sequence number. An attacker on the path does not have to: the numbers are in every TCP header, and Model 4 simply copies them. Prediction is what an attacker off the path must do, and unpredictable <button type="button" class="term" data-t="isn">ISNs</button> are the defense against that <a class="cite" href="#src-6528">RFC 6528</a>.</p></div>
+    <div class="col"><p class="note"><strong>Read or predict?</strong>Step 2 speaks of predicting the sequence number. An attacker on the path does not have to: the numbers are in every TCP header, and Model 4 simply copies them. Prediction is what an attacker off the path must do, and unpredictable <button type="button" class="term" data-t="isn">ISNs</button> are the defense against that <a class="cite" href="#src-6528">RFC 6528</a>.</p></div>
 
     <h3 class="h">Passive vs active hijacking</h3>
     <div class="tbl"><table>
       <thead><tr><th scope="col"></th><th scope="col">Passive</th><th scope="col">Active</th></tr></thead>
       <tbody>
-        <tr><th scope="row">What the attacker does <a class="cite" href="#src-ehe">EHE p. 48</a></th><td>Gets into the session but only watches and records the traffic</td><td>Finds an active session and takes control of it, by disrupting the connection or inserting itself into it</td></tr>
+        <tr><th scope="row">What the attacker does <a class="cite" href="#src-m07">Module 07 p. 48</a></th><td>Gets into the session but only watches and records the traffic</td><td>Finds an active session and takes control of it, by disrupting the connection or inserting itself into it</td></tr>
         <tr><th scope="row">In Model 4</th><td>Phase 1 on its own</td><td>Phases 2 and 3</td></tr>
         <tr><th scope="row">Part of CIA hit</th><td>Confidentiality</td><td>Integrity, and availability for the real client, who is locked out</td></tr>
       </tbody>
@@ -789,19 +722,18 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="tbl"><table>
       <thead><tr><th scope="col"></th><th scope="col">Spoofing</th><th scope="col">Hijacking</th></tr></thead>
       <tbody>
-        <tr><th scope="row">What the attacker does <a class="cite" href="#src-ehe">EHE p. 49</a></th><td>Pretends to be another user or machine in order to get access</td><td>Takes control of a session that is already active</td></tr>
+        <tr><th scope="row">What the attacker does <a class="cite" href="#src-m07">Module 07 p. 49</a></th><td>Pretends to be another user or machine in order to get access</td><td>Takes control of a session that is already active</td></tr>
         <tr><th scope="row">Which session</th><td>A new one, opened by the attacker with the victim's stolen credentials</td><td>The victim's own</td></tr>
         <tr><th scope="row">What it depends on</th><td>Having the credentials</td><td>The real user connecting and authenticating first</td></tr>
         <tr><th scope="row">On this page</th><td>Platform 1: every flood packet carries a spoofed source address, and no session is ever opened</td><td>Model 4. Its forged packets also carry the client's address, so a hijack contains spoofing, but spoofing alone is not a hijack</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>EHE's example</strong>James logs on to the server with his own credentials. John, the attacker, predicts the sequence and kills James's connection, then carries on in his place <a class="cite" href="#src-ehe">EHE p. 49</a>. That is the Model 4 sequence with names attached.</p></div>
 
     <h3 class="h">Network-level vs application-level hijacking</h3>
     <div class="tbl"><table>
       <thead><tr><th scope="col"></th><th scope="col">Network-level (this model)</th><th scope="col">Application-level</th></tr></thead>
       <tbody>
-        <tr><th scope="row">EHE's definition <a class="cite" href="#src-ehe">p. 50</a></th><td>Intercepting packets while they travel between a client and a server in a TCP or UDP session, and possibly altering them</td><td>Gaining control of the HTTP user session by obtaining its session ID: stealing it, guessing it or brute-forcing it</td></tr>
+        <tr><th scope="row">Definition <a class="cite" href="#src-m07">Module 07 p. 50</a></th><td>Intercepting packets while they travel between a client and a server in a TCP or UDP session, and possibly altering them</td><td>Gaining control of the HTTP user session by obtaining its session ID: stealing it, guessing it or brute-forcing it</td></tr>
         <tr><th scope="row">Layer</th><td>3 and 4: IP and TCP</td><td>7: HTTP and HTTPS</td></tr>
         <tr><th scope="row">What is taken over</th><td>The TCP stream itself</td><td>The session cookie or token</td></tr>
         <tr><th scope="row">How</th><td>Sniff SEQ/ACK, desynchronize, inject; RST tricks</td><td>XSS, session fixation, sniffing cookies sent over plain HTTP</td></tr>
@@ -809,75 +741,12 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">Main defense</th><td>Encrypt and authenticate packets (TLS, IPsec); unpredictable <button type="button" class="term" data-t="isn">ISNs</button> stop attackers off the path <a class="cite" href="#src-6528">RFC 6528</a></td><td>Cookie flags <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>, plus HSTS (slides 76 to 78)</td></tr>
       </tbody>
     </table></div>
-    <h3 class="h">EHE's four hijacking methods, next to the TCP hijack</h3>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">Method</th><th scope="col">EHE</th><th scope="col">What the attacker ends up with</th><th scope="col">How</th><th scope="col">Level</th><th scope="col">Main defense</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Session sniffing</th><td>p. 52</td><td>A valid session ID, such as a cookie or token</td><td>Captures unencrypted traffic, for example on public Wi-Fi, and reads the ID out of it</td><td>Application</td><td>Encrypt the traffic (HTTPS), <button type="button" class="term" data-t="hsts">HSTS</button></td></tr>
-        <tr><th scope="row">Man-in-the-middle</th><td>p. 53</td><td>A place between client and server, from which it can read, change and insert data</td><td>Splits the connection in two: client to attacker, and attacker to server. Each side believes it is talking to the other</td><td>Network</td><td>Encryption that also proves who is at the other end: TLS, IPsec, SSH</td></tr>
-        <tr><th scope="row">Session replay</th><td>p. 54</td><td>The user's authentication token</td><td>Eavesdrops while the user authenticates, then sends the captured token to the server again</td><td>Application</td><td>Encrypt the traffic; end the session at log-out so an old token stops working</td></tr>
-        <tr><th scope="row">Session fixation</th><td>p. 55</td><td>The victim's logged-in session, under an ID the attacker chose</td><td>Gets a valid session ID from the site, sends it to the victim in a link, waits for the victim to log in with it, then uses the same ID</td><td>Application</td><td>Issue a new session ID after login and accept only IDs the server generated <a class="cite" href="#src-ehe">p. 59</a></td></tr>
-        <tr class="mark"><th scope="row">TCP hijack (Model 4)</th><td>p. 47</td><td>The TCP stream itself</td><td>Copies SEQ and ACK, desynchronizes the two ends, injects</td><td>Network</td><td>TLS, IPsec, SSH</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col"><p class="note"><strong>How the five connect</strong>Sniffing is the first step of four of them. A man-in-the-middle position is what "on the path" means in Model 4. Fixation is the odd one out: the attacker never needs to see the victim's traffic, so encryption alone does not stop it. Its four steps in EHE match the four stages on slide 72.</p></div>
-
-    <h3 class="h">Getting on the path: the sniffing part of the module</h3>
     <div class="col">
-      <p>Phase 1 needs the attacker to see the packets. The first part of the courseware explains how. A sniffer puts the network card into <button type="button" class="term" data-t="promisc">promiscuous mode</button>, so it reads every packet on the wire and not only those addressed to it <a class="cite" href="#src-ehe">EHE p. 6</a>. On a hub that is enough. On a switch each machine receives only its own traffic, so the attacker has to interfere <a class="cite" href="#src-ehe">EHE p. 7</a>.</p>
+      <p class="note"><strong>How the attacker gets on the path</strong>Phase 1 needs the attacker to see the packets. A sniffer puts the network card into <button type="button" class="term" data-t="promisc">promiscuous mode</button>, so it reads every packet on the wire and not only those addressed to it <a class="cite" href="#src-m07">Module 07 p. 6</a>. On a switched network each machine receives only its own traffic, so the attacker first uses <button type="button" class="term" data-t="arpspoof">ARP spoofing</button>: forged ARP entries make the victim send traffic meant for the legitimate address to the attacker's machine instead <a class="cite" href="#src-m07">Module 07 p. 13</a>. That is the position Model 4 starts from. The victim in the model is a Telnet session because Telnet sends everything in plaintext, keystrokes, usernames and passwords included <a class="cite" href="#src-m07">Module 07 p. 9</a>.</p>
+      <p class="note"><strong>Why it works</strong>Four of the usual reasons session hijacking succeeds apply to a TCP session <a class="cite" href="#src-m07">Module 07 p. 46</a>. What identifies the session travels unprotected: SEQ and ACK are in the clear in every TCP header. The identifiers can be weak: a predictable ISN lets an attacker off the path guess them <a class="cite" href="#src-6528">RFC 6528</a>. A session that never times out can be attacked for as long as it stays open. And most countermeasures do not work without encryption, which Model 4 shows: with protection set to None, nothing stops the injection.</p>
+      <p class="note"><strong>Countermeasures</strong>Use SSH to create a secure channel in place of Telnet, and encrypt data in transit as part of defense in depth <a class="cite" href="#src-m07">Module 07 p. 59</a>. SSH, like TLS, encrypts the data and checks its integrity inside the TCP connection, so in Model 4 it would behave like the TLS setting.</p>
+      <p class="note"><strong>Detection, by hand and automatic</strong>There are two ways to detect a hijack <a class="cite" href="#src-m07">Module 07 p. 58</a>. By hand: capture traffic with a packet sniffer such as Wireshark and filter it for suspicious activity. Automatic: an <button type="button" class="term" data-t="idps">IDPS</button> watches the traffic all the time, raises an alert when packets match a known attack signature, and blocks them. Either one would see what the packet log in Model 4 shows: REJECT and BAD SEQ rows, and a burst of empty ACKs.</p>
     </div>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col"></th><th scope="col">Passive sniffing</th><th scope="col">Active sniffing</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">How</th><td>Only listens</td><td>Injects traffic into the network</td></tr>
-        <tr><th scope="row">Works on</th><td>Hub-based networks</td><td>Switched networks</td></tr>
-        <tr><th scope="row">Technique</th><td>A packet sniffer</td><td>ARP poisoning and similar</td></tr>
-        <tr><th scope="row">Detection</th><td>Very hard to detect</td><td>Easier to detect</td></tr>
-        <tr><th scope="row">Side effects</th><td>None</td><td>Can disrupt the network or cause anomalies</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col">
-      <p>On a switched network the usual route is <button type="button" class="term" data-t="arpspoof">ARP spoofing</button>. ARP links an IP address to a hardware (MAC) address. The attacker sends forged ARP entries to the victim, so traffic meant for the legitimate address goes to the attacker's machine instead <a class="cite" href="#src-ehe">EHE p. 13</a>. EHE gives the whole route in six steps <a class="cite" href="#src-ehe">EHE p. 8</a>:</p>
-      <ol class="plain">
-        <li>Connect a machine to a switch port.</li>
-        <li>Run discovery tools to learn how the network is laid out.</li>
-        <li>Pick the victim's machine.</li>
-        <li>Poison the victim's ARP cache.</li>
-        <li>Traffic meant for the victim is now redirected through the attacker.</li>
-        <li>Read the sensitive data out of the redirected traffic.</li>
-      </ol>
-      <p class="note"><strong>Step 5 is where Model 4 starts</strong>The model opens with the attacker already on the path. EHE also lists Telnet among the protocols that send everything in plaintext, keystrokes, usernames and passwords included <a class="cite" href="#src-ehe">EHE p. 9</a>, which is why the model's victim is a Telnet session.</p>
-      <p class="note"><strong>Stopping it at this stage</strong>Restrict physical access to network devices. Use end-to-end encryption such as HTTPS, TLS or a VPN. Add the gateway's MAC address to the ARP cache permanently, or use static ARP tables, so forged entries are ignored <a class="cite" href="#src-ehe">EHE p. 21</a>.</p>
-      <p class="note"><strong>Finding a sniffer</strong>EHE gives three tests. Ping method: send a ping with the suspect's correct IP address but a wrong MAC address; only a card in promiscuous mode answers <a class="cite" href="#src-ehe">EHE p. 22</a>. DNS method: watch for a machine that makes many reverse DNS lookups, as most sniffers do to turn addresses into names <a class="cite" href="#src-ehe">p. 23</a>. ARP method: a promiscuous machine has already cached everyone's ARP details and replies to a ping directly, where a normal machine sends an ARP probe first <a class="cite" href="#src-ehe">p. 24</a>.</p>
-    </div>
-
-    <h3 class="h">Why hijacking works: EHE's six reasons</h3>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE reason (p. 46)</th><th scope="col">What it means for the TCP hijack in Model 4</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">No lockout after invalid session IDs</th><td>Web sessions only: it lets an attacker keep guessing IDs</td></tr>
-        <tr><th scope="row">Weak algorithms for generating session IDs, or short IDs</th><td>The TCP version is a predictable ISN, which lets an attacker off the path guess the SEQ numbers <a class="cite" href="#src-6528">RFC 6528</a></td></tr>
-        <tr><th scope="row">Session IDs sent insecurely over the network</th><td>TCP sends SEQ and ACK in the clear in every header. This is what phase 1 reads</td></tr>
-        <tr><th scope="row">Sessions that never time out</th><td>A Telnet session left open can be hijacked for as long as it stays open</td></tr>
-        <tr><th scope="row">Poor handling and storage of session IDs</th><td>Web sessions only</td></tr>
-        <tr class="mark"><th scope="row">Most countermeasures do not work without encryption</th><td>Model 4 shows this: with protection set to None nothing stops the injection, and TLS or IPsec does</td></tr>
-      </tbody>
-    </table></div>
-
-    <h3 class="h">EHE's countermeasures, and what each one stops</h3>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">EHE countermeasure (p. 59)</th><th scope="col">Stops</th><th scope="col">How</th></tr></thead>
-      <tbody>
-        <tr class="mark"><th scope="row">Use SSH for a secure channel</th><td>TCP hijack, sniffing</td><td>SSH replaces Telnet. Like TLS it encrypts the data and checks its integrity inside the TCP connection, so in Model 4 it would behave like the TLS setting</td></tr>
-        <tr class="mark"><th scope="row">Encrypt data in transit, as part of defense in depth</th><td>Sniffing, man-in-the-middle, replay, TCP hijack</td><td>Captured packets cannot be read and forged ones fail their checks</td></tr>
-        <tr><th scope="row">Enable HSTS</th><td>Sniffing of sessions sent over plain HTTP</td><td>The browser refuses unencrypted connections to the site (slides 75 and 78)</td></tr>
-        <tr><th scope="row">Generate the session ID after a successful login, and accept only IDs the server generated</th><td>Session fixation</td><td>The ID the attacker planted is replaced at login</td></tr>
-        <tr><th scope="row">Long, random session keys</th><td>Guessing and brute force</td><td>There are too many possible values to try</td></tr>
-        <tr><th scope="row">Log-out functionality</th><td>Replay and stolen IDs</td><td>The session ends, so a captured ID stops working</td></tr>
-        <tr><th scope="row">Different usernames and passwords for different accounts</th><td>Limits the damage</td><td>One stolen login does not open the user's other accounts</td></tr>
-      </tbody>
-    </table></div>
-    <div class="col"><p class="note"><strong>Detection, by hand and automatic</strong>EHE gives two ways to detect a hijack <a class="cite" href="#src-ehe">EHE p. 58</a>. By hand: capture traffic with a packet sniffer such as Wireshark and filter it for suspicious activity. Automatic: an <button type="button" class="term" data-t="idps">IDPS</button> watches the traffic all the time, raises an alert when packets match a known attack signature, and blocks them. Either one would see what the packet log in Model 4 shows: REJECT and BAD SEQ rows, and a burst of empty ACKs. Tools named in the courseware: Wireshark, USM Anywhere, Check Point IPS, LogRhythm, SolarWinds Security Event Manager and IBM Security Network Intrusion Prevention System <a class="cite" href="#src-ehe">EHE p. 60</a>.</p></div>
   </div>
 </section>
 
@@ -888,25 +757,12 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="tbl"><table>
       <thead><tr><th scope="col"></th><th scope="col">SYN flood</th><th scope="col">Mirai</th><th scope="col">TCP session hijack</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Part of the EHE module</th><td>DoS and DDoS techniques, p. 36</td><td>DDoS and botnets, p. 29 to 31. Mirai itself is not named</td><td>Session hijacking process, p. 47</td></tr>
-        <tr><th scope="row">EHE's wider category</th><td>One of six DoS techniques</td><td>The handler and zombies behind a DDoS</td><td>Network-level hijacking, as opposed to application-level (p. 50)</td></tr>
         <tr><th scope="row">Part of CIA hit</th><td>Availability</td><td>Availability, through the DDoS it launches; the devices themselves are taken over</td><td>Integrity and confidentiality</td></tr>
         <tr><th scope="row">Layer</th><td>Transport (TCP)</td><td>Application (Telnet login) to recruit; its floods hit several layers</td><td>Network and transport (IP, TCP)</td></tr>
         <tr><th scope="row">What it abuses</th><td>The server stores state before the client is proven real</td><td>Factory-default passwords on exposed Telnet</td><td>Trust in any packet with the right IP, port and SEQ/ACK</td></tr>
         <tr><th scope="row">Attacker needs</th><td>A way to send many SYNs; spoofing hides the source</td><td>Internet reach to devices with Telnet open</td><td>A position on the path, or ISNs it can guess</td></tr>
         <tr><th scope="row">Stages</th><td>4 (slide 45)</td><td>6-stop loop (paper §2)</td><td>3 phases (slide 65)</td></tr>
         <tr><th scope="row">Best defense</th><td>SYN cookies; filtering and scrubbing upstream</td><td>Change default passwords, close Telnet, patch</td><td>Encryption with authentication: TLS, IPsec; random ISNs</td></tr>
-        <tr><th scope="row">Countermeasure in EHE</th><td>Stop forged source addresses at the ISP; keep the kernel updated (p. 41)</td><td>Disable unused services; secure remote administration (p. 41)</td><td>SSH; encrypt data in transit (p. 59)</td></tr>
-        <tr><th scope="row">Detection in EHE</th><td>Not covered. The lecture counts SYN_RECV entries (slide 58)</td><td>Scan machines for unusual behavior (p. 41)</td><td>Wireshark by hand, or an IDPS (p. 58)</td></tr>
-      </tbody>
-    </table></div>
-    <h3 class="h">Defensive tools the EHE module names</h3>
-    <div class="tbl"><table>
-      <thead><tr><th scope="col">For</th><th scope="col">EHE</th><th scope="col">Tools</th><th scope="col">What they do</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">DoS and DDoS protection</th><td>p. 42</td><td>Anti DDoS Guardian, Imperva DDoS Protection, Akamai DDoS Protection, Radware DefensePro, Cloudflare, F5</td><td>Stand in front of the server and pass on only clean traffic</td></tr>
-        <tr><th scope="row">Session hijacking detection</th><td>p. 60</td><td>Wireshark, USM Anywhere, Check Point IPS, LogRhythm, SolarWinds Security Event Manager, IBM Security Network Intrusion Prevention System</td><td>Capture and examine traffic, or alert on and block packets that match attack signatures</td></tr>
-        <tr><th scope="row">Sniffing detection</th><td>p. 25</td><td>XArp, sniffdet, ntopng, tcpdump, WinDump</td><td>XArp detects ARP spoofing attempts and alerts the user; the others capture or monitor traffic</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -936,14 +792,12 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       <div id="t-desync"><dt>Desynchronized state</dt><dd>Both ends think the connection is open, but each one's SEQ falls outside what the other expects, so their own packets get rejected. <a class="cite" href="#src-joncheray">Joncheray</a></dd></div>
       <div id="t-ackstorm"><dt>ACK storm</dt><dd>Two desynchronized ends answering each other's unacceptable packets with ACKs, in a loop. The ACKs carry no data, so one lost packet ends it. <a class="cite" href="#src-joncheray">Joncheray</a></dd></div>
       <div id="t-tls"><dt>TLS and IPsec ESP</dt><dd>TLS encrypts and authenticates the data inside a TCP connection; ESP does the same for whole IP payloads, TCP header included. Forged bytes fail their integrity checks. <a class="cite" href="#src-8446">RFC 8446</a> <a class="cite" href="#src-4303">RFC 4303</a></dd></div>
-      <div id="t-dos"><dt>DoS (denial of service)</dt><dd>An attack that makes a computer or network unavailable to its legitimate users by overloading it with requests or traffic. <a class="cite" href="#src-ehe">EHE p. 28</a></dd></div>
-      <div id="t-ddos"><dt>DDoS (distributed denial of service)</dt><dd>A coordinated denial-of-service attack launched from a large number of compromised systems at once. <a class="cite" href="#src-ehe">EHE p. 29</a></dd></div>
-      <div id="t-zombie"><dt>Handler and zombie</dt><dd>EHE's names for the two layers of a DDoS. The handler is the system the attacker sets up and controls directly; the zombies are the compromised machines it instructs to attack. Zombies are also called bots. <a class="cite" href="#src-ehe">EHE p. 29</a></dd></div>
-      <div id="t-promisc"><dt>Promiscuous mode</dt><dd>A network card setting in which the card reads every packet on the wire, not only those addressed to its own MAC address. Sniffers depend on it. <a class="cite" href="#src-ehe">EHE p. 6</a></dd></div>
-      <div id="t-arpspoof"><dt>ARP spoofing</dt><dd>Sending forged ARP entries to a machine, so that it links a legitimate IP address to the attacker's MAC address and sends that traffic to the attacker. Also called ARP poisoning. <a class="cite" href="#src-ehe">EHE p. 13</a></dd></div>
-      <div id="t-sessid"><dt>Session ID (session token)</dt><dd>A value a web server creates to tell one client's session from another. Whoever presents it is treated as that logged-in user. <a class="cite" href="#src-ehe">EHE p. 45</a></dd></div>
-      <div id="t-idps"><dt>IDPS</dt><dd>Intrusion detection or prevention system. It monitors network traffic continuously, alerts when packets match a known attack signature, and can block them. <a class="cite" href="#src-ehe">EHE p. 58</a></dd></div>
-      <div id="t-hsts"><dt>HSTS</dt><dd>HTTP Strict Transport Security: a response header that tells the browser to use only HTTPS for that site (slide 78). EHE lists it as a session hijacking countermeasure. <a class="cite" href="#src-ehe">EHE p. 59</a></dd></div>
+      <div id="t-dos"><dt>DoS (denial of service)</dt><dd>An attack that makes a computer or network unavailable to its legitimate users by overloading it with requests or traffic. <a class="cite" href="#src-m07">Module 07 p. 28</a></dd></div>
+      <div id="t-ddos"><dt>DDoS (distributed denial of service)</dt><dd>A coordinated denial-of-service attack launched from a large number of compromised systems at once. <a class="cite" href="#src-m07">Module 07 p. 29</a></dd></div>
+      <div id="t-zombie"><dt>Handler and zombie</dt><dd>Names for the two layers of a DDoS botnet. The handler is the system the attacker sets up and controls directly; the zombies are the compromised machines it instructs to attack. Zombies are also called bots. <a class="cite" href="#src-m07">Module 07 p. 29</a></dd></div>
+      <div id="t-promisc"><dt>Promiscuous mode</dt><dd>A network card setting in which the card reads every packet on the wire, not only those addressed to its own MAC address. Sniffers depend on it. <a class="cite" href="#src-m07">Module 07 p. 6</a></dd></div>
+      <div id="t-arpspoof"><dt>ARP spoofing</dt><dd>Sending forged ARP entries to a machine, so that it links a legitimate IP address to the attacker's MAC address and sends that traffic to the attacker. Also called ARP poisoning. <a class="cite" href="#src-m07">Module 07 p. 13</a></dd></div>
+      <div id="t-idps"><dt>IDPS</dt><dd>Intrusion detection or prevention system. It monitors network traffic continuously, alerts when packets match a known attack signature, and can block them. <a class="cite" href="#src-m07">Module 07 p. 58</a></dd></div>
     </dl>
   </div>
 </section>
@@ -954,7 +808,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <h2 id="src-h" style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900">Sources</h2>
     <div class="col">
       <ol>
-        <li id="src-ehe">EC-Council. <em>Ethical Hacking Essentials (EHE) v2, Module 07: Network Level Attacks and Countermeasures</em>. Official courseware, 61 pages. Cited above as "EHE p." followed by the page number.</li>
+        <li id="src-m07">EC-Council. <em>Ethical Hacking Essentials (EHE) v2, Module 07: Network Level Attacks and Countermeasures</em>. Official courseware, 61 pages. Cited above as "Module 07 p." followed by the page number.</li>
         <li id="src-9293">Eddy, W. (ed.). <em>Transmission Control Protocol (TCP)</em>. RFC 9293, IETF, Aug 2022. <a href="https://www.rfc-editor.org/rfc/rfc9293">rfc-editor.org/rfc/rfc9293</a></li>
         <li id="src-4987">Eddy, W. <em>TCP SYN Flooding Attacks and Common Mitigations</em>. RFC 4987, IETF, Aug 2007. <a href="https://www.rfc-editor.org/rfc/rfc4987">rfc-editor.org/rfc/rfc4987</a></li>
         <li id="src-cookie">Bernstein, D. J. <em>SYN cookies</em>. <a href="https://cr.yp.to/syncookies.html">cr.yp.to/syncookies.html</a></li>
@@ -970,8 +824,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <li id="src-5737">Arkko, J. et al. <em>IPv4 Address Blocks Reserved for Documentation</em>. RFC 5737, IETF, Jan 2010 (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, used for every address in the models). <a href="https://www.rfc-editor.org/rfc/rfc5737">rfc-editor.org/rfc/rfc5737</a></li>
         <li id="src-2606">Eastlake, D. and Panitz, A. <em>Reserved Top Level DNS Names</em>. RFC 2606, IETF, Jun 1999 (.example, .test, .invalid, used for every domain in the models). <a href="https://www.rfc-editor.org/rfc/rfc2606">rfc-editor.org/rfc/rfc2606</a></li>
       </ol>
-      <p>Lecture material: EHE Cyber Module 07, Part 2, Network Level Attacks (slides 41, 44 to 46, 51 and 52, 55, 57, 58, 63 to 67, 72, 75 to 78 and 80).</p>
-      <p>Courseware pages used: EHE v2 Module 07, p. 2, 6 to 9, 13, 21 to 25, 28 to 31, 33 to 38, 41, 42, 45 to 50, 52 to 55 and 58 to 60.</p>
+      <p>Lecture material: EHE Cyber Module 07, Part 2, Network Level Attacks (slides 44 to 46, 51 and 52, 55, 57, 58, 63 to 67, 76 and 80).</p>
     </div>
   </div>
 </section>
