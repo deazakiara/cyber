@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Network-Level Attacks Lab (Copy)</title>
+<title>Network-Level Attacks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800;900&family=Overpass+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -287,7 +287,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
 
 <nav class="bar" aria-label="Platforms">
   <div class="wide">
-    <a class="bar-home" href="#top"><span class="code">M07</span><span class="bar-title">Network-level attacks</span></a>
+    <a class="bar-home" href="#top"><span class="code">NET</span><span class="bar-title">Network-level attacks</span></a>
     <ol>
       <li><a href="#syn"><span class="pl">1</span><span class="lbl">SYN flood</span></a></li>
       <li><a href="#mirai"><span class="pl">2</span><span class="lbl">Mirai &amp; DGA</span></a></li>
@@ -304,11 +304,11 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="sign">
       <h1>Three <span class="nw">network-level</span> attacks</h1>
       <p class="lede">Each attack below runs on a small working model. Start the attack, then turn on a defense and run it again. A guide next to each model says which button to press, and a panel under it explains each step.</p>
-      <p class="meta">Kelompok 4 / Cybersecurity, semester 5 / Module 07, part 2 (slides 37 to 81) / EC-Council EHE v2</p>
+      <p class="meta">An independent reference on SYN floods, the Mirai botnet and TCP session hijacking. Each claim links to its source: IETF RFCs, peer-reviewed research, government advisories and EC-Council courseware.</p>
     </div>
     <div class="board hero-board" id="hero-board">
       <div class="b-head"><span>Choose a platform</span><span class="b-stat">Time <span id="clock"></span></span></div>
-      <div class="row b-cols"><span style="--w:1">#</span><span style="--w:11">Attack</span><span class="hide-s" style="--w:17">What it abuses</span><span class="hide-s" style="--w:5">Slides</span><span style="--w:5">Model</span></div>
+      <div class="row b-cols"><span style="--w:1">#</span><span style="--w:11">Attack</span><span class="hide-s" style="--w:17">What it abuses</span><span class="hide-s" style="--w:5">Layer</span><span style="--w:5">Model</span></div>
       <div id="hero-rows"></div>
     </div>
     <p class="tip">Dotted words open a short definition with its source. The models run only inside this page: no real traffic, and every address and domain comes from ranges reserved for documentation.</p>
@@ -322,7 +322,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="sign p-sign">
       <span class="p-num" aria-hidden="true">1</span>
       <div><h2 id="syn-h"><span class="vh">Platform 1: </span>TCP SYN flood</h2><p class="sub">Filling a server's waiting list with connections that never finish</p></div>
-      <span class="ref">Slides 44 to 46</span>
+      <span class="ref">Key sources: RFC 4987, RFC 9293</span>
     </div>
     <div class="col">
       <p class="lead">Every TCP connection opens with a <button type="button" class="term" data-t="handshake">3-way handshake</button>. The server sets aside memory for the connection, a <button type="button" class="term" data-t="tcb">TCB</button>, as soon as the first packet arrives, before it knows the sender is real. A SYN flood sends thousands of first packets from <button type="button" class="term" data-t="spoof">spoofed</button> addresses. Each leaves a <button type="button" class="term" data-t="halfopen">half-open</button> connection waiting for an answer that never comes, until the <button type="button" class="term" data-t="backlog">backlog</button> is full and real users are turned away.</p>
@@ -334,7 +334,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <h3 id="syn-cap">Model 1: the server's waiting list</h3>
         <p>The black board is the server's SYN queue. Each row is one half-open connection, and each one uses memory on the server. Real users are shown in blue so you can tell them apart. The server itself cannot. The clock runs 5&times; faster, and the queue is cut to 8 rows so you can watch each one.</p>
       </div>
-      <ol class="rail" aria-label="Attack stages from slide 45">
+      <ol class="rail" aria-label="Attack stages">
         <li>SYN spoofing</li><li>SYN/ACK orphaned</li><li>Queue overflow</li><li>Denial of service</li>
       </ol>
       <div class="sim-grid">
@@ -384,16 +384,16 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
 
     <h3 class="h">The attack step by step, and where the model shows it</h3>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 36</a></th><th scope="col">Slide 45</th><th scope="col">Where you see it in Model 1</th></tr></thead>
+      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 36</a></th><th scope="col">Stage</th><th scope="col">Where you see it in Model 1</th></tr></thead>
       <tbody>
-        <tr><th scope="row">1. The attack exploits the three-way handshake</th><td>The premise, on slide 44: memory is set aside before the handshake is complete</td><td class="where">Connect as a real user shows the handshake working normally</td></tr>
+        <tr><th scope="row">1. The attack exploits the three-way handshake</th><td>The premise: memory is set aside before the handshake is complete</td><td class="where">Connect as a real user shows the handshake working normally</td></tr>
         <tr><th scope="row">2. The attacker sends a large number of fake SYN requests with spoofed source addresses</th><td>Stage 1, SYN spoofing</td><td class="where">Send 1 spoofed SYN and Start flood: red packets, each from a different 203.0.113.x address</td></tr>
         <tr><th scope="row">3. The server answers each one with a SYN/ACK and waits for the final ACK</th><td>Stage 2, SYN/ACK orphaned</td><td class="where">An amber packet fades out toward an offline address; the row shows SYN_RECV and a Hold countdown</td></tr>
         <tr><th scope="row">4. The ACK never comes, so half-open connections pile up in the listening queue</th><td>Stage 3, queue overflow</td><td class="where">The board lamp turns red and the counter reads FULL</td></tr>
         <tr><th scope="row">5. The server's resources are used up and it cannot process legitimate requests</th><td>Stage 4, denial of service</td><td class="where">Your own SYN is marked DROPPED and the Refused counter goes up</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>Four stages or five steps</strong>The slide starts counting at the first spoofed packet, so its four stages are steps 2 to 5 here. Why the server's reply goes unanswered is explained in the note under the next table.</p></div>
+    <div class="col"><p class="note"><strong>Four stages or five steps</strong>The four-stage view starts counting at the first spoofed packet, so its stages are steps 2 to 5 here. Why the server's reply goes unanswered is explained in the note under the next table.</p></div>
 
     <h3 class="h">Normal handshake vs SYN flood</h3>
     <div class="tbl"><table>
@@ -419,8 +419,8 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">Firewall or proxy</th><td>A middlebox completes the handshake and passes on only finished connections</td><td>Moves the load onto the middlebox <a class="cite" href="#src-4987">§3.8</a></td><td>Not modeled</td></tr>
       </tbody>
     </table></div>
-    <div class="col"><p class="note"><strong>Spotting it on a server</strong>Count half-open connections with <code>netstat -an | grep SYN_RECV | wc -l</code>; the model's board footer shows the same count. The slide treats more than 100 as an early sign of a SYN flood (slide 58). On Linux each SYN_RECV entry costs about 304 bytes of memory <a class="cite" href="#src-kernel">kernel docs</a>.</p>
-      <p class="note"><strong>Finding who is sending</strong>Slide 58's second command counts connections per source address: <code>netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n</code>. Against a spoofed flood it finds nothing useful, because every SYN carries a different fake address, so each one appears once, as on the model's board. It helps against a botnet that floods from its real addresses, where a few sources show up hundreds of times.</p></div>
+    <div class="col"><p class="note"><strong>Spotting it on a server</strong>Count half-open connections with <code>netstat -an | grep SYN_RECV | wc -l</code>; the model's board footer shows the same count. There is no fixed threshold: compare the count with what the server normally shows, because a busy server holds many legitimate half-open connections. On Linux each SYN_RECV entry costs about 304 bytes of memory <a class="cite" href="#src-kernel">kernel docs</a>.</p>
+      <p class="note"><strong>Finding who is sending</strong>A second command counts connections per source address: <code>netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n</code>. Against a spoofed flood it finds nothing useful, because every SYN carries a different fake address, so each one appears once, as on the model's board. It helps against a botnet that floods from its real addresses, where a few sources show up hundreds of times.</p></div>
     <h3 class="h">DoS vs DDoS</h3>
     <div class="col"><p>Model 1 is a DoS: one attacker against one server. When the same flood comes from a <button type="button" class="term" data-t="botnet">botnet</button> it is a <button type="button" class="term" data-t="ddos">DDoS</button>, which is where platform 2 picks up <a class="cite" href="#src-m07">Module 07 p. 30</a>.</p></div>
     <div class="tbl"><table>
@@ -435,8 +435,8 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
       </tbody>
     </table></div>
     <div class="col"><p class="note"><strong>One attack, both forms</strong>The 2016 attack on Dyn was a DDoS that included SYN floods: the technique from this platform, sent by the botnet from the next one <a class="cite" href="#src-mirai">Antonakakis §6.3</a>.</p>
-      <p class="note"><strong>What sets the SYN flood apart</strong>UDP, ICMP and HTTP floods win by volume: they send more than the target or its link can carry or process <a class="cite" href="#src-m07">Module 07 p. 33 to 35</a>. The SYN flood wins by holding state. Each SYN is a tiny packet, but it occupies a queue slot for as long as the server keeps retrying, about 63 s on Linux by default <a class="cite" href="#src-kernel">kernel docs</a>. That is why Model 1 fills up at only 5 SYNs per second, and why the lecture measures this kind of attack in packets per second, not gigabits (slide 55).</p>
-      <p class="note"><strong>Defenses outside the server</strong>Two measures act before a spoofed SYN reaches the queue. Networks can stop packets with forged source addresses at the ISP level, which is the Filtering row above <a class="cite" href="#src-m07">Module 07 p. 41</a>. DDoS protection services such as Cloudflare, Akamai, Imperva, Radware DefensePro and F5 stand in front of the server and pass on only clean traffic, like the Firewall or proxy row <a class="cite" href="#src-m07">Module 07 p. 42</a>; the lecture calls the cloud version BGP Anycast scrubbing (slide 57). On the server itself, keep the kernel up to date <a class="cite" href="#src-m07">Module 07 p. 41</a>, because the SYN queue and SYN cookies are kernel code <a class="cite" href="#src-kernel">kernel docs</a>.</p></div>
+      <p class="note"><strong>What sets the SYN flood apart</strong>UDP, ICMP and HTTP floods win by volume: they send more than the target or its link can carry or process <a class="cite" href="#src-m07">Module 07 p. 33 to 35</a>. The SYN flood wins by holding state. Each SYN is a tiny packet, but it occupies a queue slot for as long as the server keeps retrying, about 63 s on Linux by default <a class="cite" href="#src-kernel">kernel docs</a>. That is why Model 1 fills up at only 5 SYNs per second, and why this kind of attack is measured in packets per second, not gigabits per second.</p>
+      <p class="note"><strong>Defenses outside the server</strong>Two measures act before a spoofed SYN reaches the queue. Networks can stop packets with forged source addresses at the ISP level, which is the Filtering row above <a class="cite" href="#src-m07">Module 07 p. 41</a>. DDoS protection services such as Cloudflare, Akamai, Imperva, Radware DefensePro and F5 stand in front of the server and pass on only clean traffic, like the Firewall or proxy row <a class="cite" href="#src-m07">Module 07 p. 42</a>; cloud services usually announce the protected addresses over BGP anycast, so attack traffic is spread across many scrubbing centers. On the server itself, keep the kernel up to date <a class="cite" href="#src-m07">Module 07 p. 41</a>, because the SYN queue and SYN cookies are kernel code <a class="cite" href="#src-kernel">kernel docs</a>.</p></div>
   </div>
 </section>
 
@@ -446,12 +446,12 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="sign p-sign">
       <span class="p-num" aria-hidden="true">2</span>
       <div><h2 id="mirai-h"><span class="vh">Platform 2: </span>Mirai botnet and the DGA</h2><p class="sub">How cameras and routers with factory passwords became one remote-controlled botnet</p></div>
-      <span class="ref">Slides 51 and 52</span>
+      <span class="ref">Key source: Antonakakis et al. 2017</span>
     </div>
     <div class="col">
       <p class="lead">In 2016 Mirai took over about 600,000 cameras, video recorders and routers at its peak <a class="cite" href="#src-mirai">Antonakakis §4.2</a>, just by logging in over <button type="button" class="term" data-t="telnet">Telnet</button> with factory-default passwords. The infected devices formed a <button type="button" class="term" data-t="botnet">botnet</button> that flooded targets on orders from a <button type="button" class="term" data-t="c2">C2</button> server. The bots only find victims; a separate loader server does the infecting <a class="cite" href="#src-mirai">§2</a>.</p>
-      <p class="note"><strong>Slide 52 puts Mirai and DGA together. They came at different times.</strong>The 2016 Mirai reached its C2 through domain names written into its code, and researchers pulled 67 of them out of the binaries <a class="cite" href="#src-mirai">§3.3</a>. A <button type="button" class="term" data-t="dga">DGA</button> appeared later in one short-lived variant, used only when those hardcoded domains failed to resolve <a class="cite" href="#src-netlab">Netlab, Dec 2016</a>. The two models below keep them apart.</p>
-      <p class="note"><strong>Two numbers that differ from slide 52</strong>The slide gives about 60 default logins and "millions" of devices. The Mirai source code holds 62 username and password pairs, and the measured peak was about 600,000 devices at once <a class="cite" href="#src-mirai">Antonakakis §2, §4.2</a>. The slide also describes DGAs that make thousands of names a day; that is true of DGAs in general, while the Mirai variant made one <a class="cite" href="#src-netlab">Netlab</a>.</p>
+      <p class="note"><strong>Mirai and DGAs are often mentioned together. They came at different times.</strong>The 2016 Mirai reached its C2 through domain names written into its code, and researchers pulled 67 of them out of the binaries <a class="cite" href="#src-mirai">§3.3</a>. A <button type="button" class="term" data-t="dga">DGA</button> appeared later in one short-lived variant, used only when those hardcoded domains failed to resolve <a class="cite" href="#src-netlab">Netlab, Dec 2016</a>. The two models below keep them apart.</p>
+      <p class="note"><strong>Two numbers that are often quoted wrongly</strong>Mirai is often said to use about 60 default logins and to have infected "millions" of devices. The Mirai source code holds 62 username and password pairs, and the measured peak was about 600,000 devices at once <a class="cite" href="#src-mirai">Antonakakis §2, §4.2</a>. DGAs are also often described as making thousands of names a day; that is true of DGAs in general, while the Mirai variant made one <a class="cite" href="#src-netlab">Netlab</a>.</p>
     </div>
 
     <h3 class="h">The general shape of a DDoS botnet, and how Mirai fits it</h3>
@@ -632,7 +632,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <div class="sign p-sign">
       <span class="p-num" aria-hidden="true">3</span>
       <div><h2 id="hj-h"><span class="vh">Platform 3: </span>TCP session hijacking in 3 phases</h2><p class="sub">Taking over a live connection by forging the numbers it trusts</p></div>
-      <span class="ref">Slides 63 to 66</span>
+      <span class="ref">Key sources: Joncheray 1995, RFC 9293</span>
     </div>
     <div class="col">
       <p class="lead">Once a TCP connection is open, each end accepts any packet with the right addresses, ports and <button type="button" class="term" data-t="seqack">SEQ/ACK</button> numbers. Nothing else proves who sent it. An attacker <button type="button" class="term" data-t="onpath">on the path</button> between client and server can read those numbers, knock the two ends out of step, then speak to the server as the client <a class="cite" href="#src-joncheray">Joncheray 1995</a>.</p>
@@ -642,9 +642,9 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     <figure class="sim" id="sim-hj" aria-labelledby="hj-cap">
       <div class="sim-head">
         <h3 id="hj-cap">Model 4: hijack a Telnet session</h3>
-        <p>The handshake is done: the client started at 100, the server at 300, the same numbers as slide 63. The three boards show what each side expects next. The server accepts a packet only if its SEQ equals the byte it expects next (inside its window) <a class="cite" href="#src-9293">RFC 9293 §3.10.7.4</a>.</p>
+        <p>The handshake is done: the client started at 100, the server at 300. Real starting numbers are random 32-bit values; small ones are easier to follow. The three boards show what each side expects next. The server accepts a packet only if its SEQ equals the byte it expects next (inside its window) <a class="cite" href="#src-9293">RFC 9293 §3.10.7.4</a>.</p>
       </div>
-      <ol class="rail" aria-label="Hijack phases from slide 65">
+      <ol class="rail" aria-label="Hijack phases">
         <li>Track and sniff</li><li>Desynchronize</li><li>Inject</li><li class="side">ACK storm</li>
       </ol>
       <div class="sim-grid">
@@ -693,11 +693,11 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
     </figure>
 
     <div class="col"><p class="note"><strong>Two ways to desynchronize</strong>The model injects harmless null data (Telnet no-ops) into an open session, so the server's count jumps ahead of the client's. The other way, early desync, strikes during setup: the attacker resets the half-built connection with an <button type="button" class="term" data-t="rst">RST</button> and opens a new one with a different starting number <a class="cite" href="#src-joncheray">Joncheray</a>. Either way the result is the same <button type="button" class="term" data-t="desync">desynchronized</button> state, and an <button type="button" class="term" data-t="ackstorm">ACK storm</button> follows.</p>
-      <p class="note"><strong>Spotting it</strong>A network IDS sees what the packet log in the model shows: a sudden jump in a connection's sequence numbers (the "SEQ Jump" indicator on slide 80) and bursts of empty ACKs going back and forth between two hosts. The lab tool on slides 66 and 67, Hunt, does the same three phases on a real LAN: it lists active connections, resets or desynchronizes one, and injects into it.</p></div>
+      <p class="note"><strong>Spotting it</strong>A network IDS sees what the packet log in the model shows: a sudden jump in a connection's sequence numbers and bursts of empty ACKs going back and forth between two hosts. The classic hijacking tool Hunt does the same three phases on a real LAN: it lists active connections, resets or desynchronizes one, and injects into it.</p></div>
 
-    <h3 class="h">Five steps, the lecture's three phases, and the model</h3>
+    <h3 class="h">Five steps, three phases, and the model</h3>
     <div class="tbl"><table>
-      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 47</a></th><th scope="col">What happens</th><th scope="col">Slide 65</th><th scope="col">Where you see it in Model 4</th></tr></thead>
+      <thead><tr><th scope="col">Step <a class="cite" href="#src-m07">Module 07 p. 47</a></th><th scope="col">What happens</th><th scope="col">Phase</th><th scope="col">Where you see it in Model 4</th></tr></thead>
       <tbody>
         <tr><th scope="row">1. Sniff</th><td>The attacker intercepts the traffic between the victim and the target</td><td>Phase 1, tracking and sniffing</td><td class="where">The attacker sits on the path, in the middle of the line diagram</td></tr>
         <tr><th scope="row">2. Monitor</th><td>The attacker watches the packets flow and predicts the sequence number</td><td>Phase 1</td><td class="where">Client sends a command: the Attacker's copy board fills in</td></tr>
@@ -738,7 +738,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">What is taken over</th><td>The TCP stream itself</td><td>The session cookie or token</td></tr>
         <tr><th scope="row">How</th><td>Sniff SEQ/ACK, desynchronize, inject; RST tricks</td><td>XSS, session fixation, sniffing cookies sent over plain HTTP</td></tr>
         <tr><th scope="row">Works against</th><td>Any TCP application</td><td>Web applications</td></tr>
-        <tr><th scope="row">Main defense</th><td>Encrypt and authenticate packets (TLS, IPsec); unpredictable <button type="button" class="term" data-t="isn">ISNs</button> stop attackers off the path <a class="cite" href="#src-6528">RFC 6528</a></td><td>Cookie flags <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>, plus HSTS (slides 76 to 78)</td></tr>
+        <tr><th scope="row">Main defense</th><td>Encrypt and authenticate packets (TLS, IPsec); unpredictable <button type="button" class="term" data-t="isn">ISNs</button> stop attackers off the path <a class="cite" href="#src-6528">RFC 6528</a></td><td>Cookie flags <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>, plus HSTS</td></tr>
       </tbody>
     </table></div>
     <div class="col">
@@ -761,7 +761,7 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <tr><th scope="row">Layer</th><td>Transport (TCP)</td><td>Application (Telnet login) to recruit; its floods hit several layers</td><td>Network and transport (IP, TCP)</td></tr>
         <tr><th scope="row">What it abuses</th><td>The server stores state before the client is proven real</td><td>Factory-default passwords on exposed Telnet</td><td>Trust in any packet with the right IP, port and SEQ/ACK</td></tr>
         <tr><th scope="row">Attacker needs</th><td>A way to send many SYNs; spoofing hides the source</td><td>Internet reach to devices with Telnet open</td><td>A position on the path, or ISNs it can guess</td></tr>
-        <tr><th scope="row">Stages</th><td>4 (slide 45)</td><td>6-stop loop (paper §2)</td><td>3 phases (slide 65)</td></tr>
+        <tr><th scope="row">Stages</th><td>4 stages</td><td>6-stop loop (paper §2)</td><td>3 phases</td></tr>
         <tr><th scope="row">Best defense</th><td>SYN cookies; filtering and scrubbing upstream</td><td>Change default passwords, close Telnet, patch</td><td>Encryption with authentication: TLS, IPsec; random ISNs</td></tr>
       </tbody>
     </table></div>
@@ -824,7 +824,6 @@ td.where{font:700 .8rem/1.45 var(--font-data);color:var(--enamel)}
         <li id="src-5737">Arkko, J. et al. <em>IPv4 Address Blocks Reserved for Documentation</em>. RFC 5737, IETF, Jan 2010 (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, used for every address in the models). <a href="https://www.rfc-editor.org/rfc/rfc5737">rfc-editor.org/rfc/rfc5737</a></li>
         <li id="src-2606">Eastlake, D. and Panitz, A. <em>Reserved Top Level DNS Names</em>. RFC 2606, IETF, Jun 1999 (.example, .test, .invalid, used for every domain in the models). <a href="https://www.rfc-editor.org/rfc/rfc2606">rfc-editor.org/rfc/rfc2606</a></li>
       </ol>
-      <p>Lecture material: EHE Cyber Module 07, Part 2, Network Level Attacks (slides 44 to 46, 51 and 52, 55, 57, 58, 63 to 67, 76 and 80).</p>
     </div>
   </div>
 </section>
@@ -951,7 +950,7 @@ function onScreen(root) { const s = { v: true }; new IntersectionObserver(([e]) 
 /* ---------- hero board + clock + nav ---------- */
 (() => {
   const host = $('#hero-rows');
-  const data = [['1', 'SYN FLOOD', '3-WAY HANDSHAKE', '44-46', '#syn', 'Platform 1: TCP SYN flood'], ['2', 'MIRAI + DGA', 'DEFAULT PASSWORDS', '51-52', '#mirai', 'Platform 2: Mirai botnet and DGA'], ['3', 'TCP HIJACK', 'SEQ/ACK TRUST', '63-66', '#hijack', 'Platform 3: TCP session hijacking']];
+  const data = [['1', 'SYN FLOOD', '3-WAY HANDSHAKE', 'L4', '#syn', 'Platform 1: TCP SYN flood'], ['2', 'MIRAI + DGA', 'DEFAULT PASSWORDS', 'L7', '#mirai', 'Platform 2: Mirai botnet and DGA'], ['3', 'TCP HIJACK', 'SEQ/ACK TRUST', 'L3-4', '#hijack', 'Platform 3: TCP session hijacking']];
   data.forEach((d, r) => {
     const a = document.createElement('a'); a.className = 'row ok'; a.href = d[4]; a.setAttribute('aria-label', d[5]);
     const cells = [mkCell(1), mkCell(11), mkCell(17, 'hide-s'), mkCell(5, 'hide-s'), mkCell(5, 'c-state')];
@@ -1012,7 +1011,7 @@ function onScreen(root) { const s = { v: true }; new IntersectionObserver(([e]) 
     $('#syn-backlog-o').textContent = `${S.q.length} slots`;
     $('#syn-retries-o').textContent = `${S.retries}, holds ${hold()} s`;
     $('#syn-sysctl').innerHTML =
-`<span class="c"># Linux settings behind these controls (slide 46)</span>
+`<span class="c"># Linux settings behind these controls</span>
 net.ipv4.tcp_max_syn_backlog = <span class="v">${S.q.length}</span>  <span class="c"># real: 128 and up</span>
 net.ipv4.tcp_synack_retries  = <span class="v">${S.retries}</span>  <span class="c"># gives up after ${hold()} s</span>
 net.ipv4.tcp_syncookies      = <span class="v">${S.cookies ? 1 : 0}</span>  <span class="c"># Linux default is 1</span>`;
